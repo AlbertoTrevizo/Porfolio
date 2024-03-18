@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Badge from '../components/Badge.astro';
+import LinkedInIcon from '../components/icons/LinkedIn.astro'
+import GithubIcon from '../components/icons/Github.astro'
+import MailIcon from '../components/icons/Mail.astro'
+import SocialPill from '../components/SocialPill.astro'
+---
+
+<Layout 
+	title="Porfolio de Alberto Trevizo - Desarrollador Web con 5 años de experiencia"
+	description="Contrata a Alberto para crear tu aplicacion web."
+>
+	<main>
+		<section class="w-full mx-auto lg:w-[740px] py-44">
+			<img 
+				class="rounded-full size-12 mb-4" 
+				src="/beto.jpeg" 
+				alt="Alberto Foto"
+			/>
+			<h1 class="text-white text-5xl font-bold flex flex-row gap-x-4 pb-10">
+				Hey, soy Beto
+				<a href="https://www.linkedin.com/in/albertotrevizo/"
+					target="_blank"
+					rel="noopener"
+					class="flex justify-center items-center"
+				>
+					<Badge>Available for work</Badge>
+				</a>
+			</h1>
+			<h2 class="text-2xl opacity-80 text-wrap">
+				<span>+5 years of experience.</span> Web developer and raver
+			</h2>
+
+			<nav class="flex gap-x-6 mt-6">
+				<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
+					<LinkedInIcon class="size-6"/>
+					LinkedIn
+				</SocialPill>
+				<SocialPill href="https://github.com/AlbertoTrevizo">
+					<GithubIcon class="size-6"/>
+					Github
+				</SocialPill>
+				<SocialPill href="">
+					<MailIcon class="size-6"/>
+					betot.saenz@gmail.com
+				</SocialPill>
+			</nav>
+		</section>
+	</main>
+</Layout>
