@@ -2,24 +2,28 @@
 import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
 import Badge from '../components/Badge.astro';
+import SocialPill from '../components/SocialPill.astro'
+import Experience from '../components/Experience.astro'
+import SectionContainer from '../components/SectionContainer.astro'
 import LinkedInIcon from '../components/icons/LinkedIn.astro'
 import GithubIcon from '../components/icons/Github.astro'
 import MailIcon from '../components/icons/Mail.astro'
-import SocialPill from '../components/SocialPill.astro'
+import Briefcase from '../components/icons/Briefcase.astro'
+import Code from '../components/icons/Code.astro'
 ---
 
 <Layout 
 	title="Porfolio de Alberto Trevizo - Desarrollador Web con 5 años de experiencia"
 	description="Contrata a Alberto para crear tu aplicacion web."
 >
-	<main>
-		<section class="w-full mx-auto lg:w-[740px] py-44">
+	<main class="px-4">
+		<SectionContainer id="about" class="py-40 pb-24">
 			<img 
 				class="rounded-full size-12 mb-4" 
 				src="/beto.jpeg" 
 				alt="Alberto Foto"
 			/>
-			<h1 class="text-white text-5xl font-bold flex flex-row gap-x-4 pb-10">
+			<h1 class="text-white text-3xl md:text-4xl lg:text-5xl font-bold flex flex-row gap-x-4 pb-6 lg:pb-10">
 				Hey, soy Beto
 				<a href="https://www.linkedin.com/in/albertotrevizo/"
 					target="_blank"
@@ -29,24 +33,39 @@ import SocialPill from '../components/SocialPill.astro'
 					<Badge>Available for work</Badge>
 				</a>
 			</h1>
-			<h2 class="text-2xl opacity-80 text-wrap">
+			<h2 class="text-xl lg:text-2xl text-wrap max-w-[700px]">
 				<span>+5 years of experience.</span> Web developer and raver
 			</h2>
 
-			<nav class="flex gap-x-6 mt-6">
+			<nav class="flex gap-4 mt-8 flex-wrap">
 				<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
-					<LinkedInIcon class="size-6"/>
+					<LinkedInIcon class="size-4 md:size-6"/>
 					LinkedIn
 				</SocialPill>
 				<SocialPill href="https://github.com/AlbertoTrevizo">
-					<GithubIcon class="size-6"/>
+					<GithubIcon class="size-4 md:size-6"/>
 					Github
 				</SocialPill>
-				<SocialPill href="">
-					<MailIcon class="size-6"/>
+				<SocialPill href="mailto:betot.saenz@gmail.com">
+					<MailIcon class="size-4 md:size-6"/>
 					betot.saenz@gmail.com
 				</SocialPill>
 			</nav>
-		</section>
+		</SectionContainer>
+
+		<SectionContainer id="experience">
+			<h2 class="text-2xl font-semibold mb-6 flex gap-x-3 items-center">
+				<Briefcase class="size-7" />
+				Experience
+			</h2>
+			<Experience/>
+		</SectionContainer>
+
+		<SectionContainer id="projects">
+			<h2 class="text-2xl font-semibold mb-6 flex gap-x-3 items-center">
+				<Code class="size-7" />
+				Projects
+			</h2>
+		</SectionContainer>
 	</main>
 </Layout>
