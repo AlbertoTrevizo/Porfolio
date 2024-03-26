@@ -1,8 +1,26 @@
+---
+import SocialPill from "./SocialPill.astro";
+import LinkedInIcon from './icons/LinkedIn.astro'
+import GithubIcon from './icons/Github.astro'
+import MailIcon from './icons/Mail.astro'
+---
+
 <footer class="rounded-lg shadow m-4">
     <div class="w-full max-w-screen-xl mx-auto p-4 md:py-8">
         
         <hr class="my-6 sm:mx-auto border-gray-700 lg:my-8" />
-        <span class="block text-sm sm:text-center text-gray-400">© 2023 <a href="https://flowbite.com/" class="hover:underline">Flowbite™</a>. All Rights Reserved.</span>
+        <!-- <span class="block text-sm sm:text-center text-gray-400">Alberto Trevizo</span> -->
+        <div class="flex items-center px-4 justify-center gap-x-16">
+            <a href="https://www.linkedin.com/in/albertotrevizo/">
+                <LinkedInIcon class="size-6 md:size-10"/>
+            </a>
+            <a href="https://github.com/AlbertoTrevizo">
+                <GithubIcon class="size-6 md:size-10"/>
+            </a>
+            <a href="mailto:betot.saenz@gmail.com">
+                <MailIcon class="size-6 md:size-10"/>
+            </a>
+        </div>
     </div>
 </footer>
 

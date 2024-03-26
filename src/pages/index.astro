@@ -18,40 +18,49 @@ import Code from '../components/icons/Code.astro'
 	description="Contrata a Alberto para crear tu aplicacion web."
 >
 	<main class="px-4">
-		<SectionContainer id="about" class="py-40 pb-32">
+		<SectionContainer id="about" class="flex items-center flex-col lg:flex-row lg:w-[1024px]">
 			<img 
-				class="rounded-full size-12 mb-4" 
-				src="/beto.jpeg" 
+				class="mb-4 object-fill" 
+				src="/BetoAvatar.png" 
 				alt="Alberto Foto"
 			/>
-			<h1 class="text-white text-3xl md:text-4xl lg:text-5xl font-bold flex flex-row gap-x-4 pb-6 lg:pb-10">
-				Alberto Trevizo
-				<a href="https://www.linkedin.com/in/albertotrevizo/"
-					target="_blank"
-					rel="noopener"
-					class="flex justify-center items-center"
-				>
-					<Badge>Available for work</Badge>
-				</a>
-			</h1>
-			<h2 class="text-xl lg:text-2xl text-wrap max-w-[700px]">
-				<span>5+ years experience as a Software engineer being part of high-performance teams that deliver innovative customer-centered products.</span> Web developer and raver
-			</h2>
+			<!-- <Card title="Hello" body='hello there' href='hi'/> -->
+			<div class="relative h-full w-full rounded-xl 
+			shadow-[0px_0px_0px_1px_rgba(9,9,11,0.07),0px_2px_2px_0px_rgba(9,9,11,0.05)] 
+			dark:shadow-[0px_0px_0px_1px_rgba(255,255,255,0.1)] dark:before:pointer-events-none 
+			dark:before:absolute dark:before:-inset-px dark:before:rounded-xl 
+			dark:before:shadow-[0px_2px_8px_0px_rgba(0,_0,_0,_0.20),_0px_1px_0px_0px_rgba(255,_255,_255,_0.06)_inset] 
+			forced-colors:outline
+			px-10 py-10 max-w-2xl">
+				<h1 class="text-white text-3xl md:text-4xl lg:text-5xl font-bold flex flex-row gap-x-4 pb-6 lg:pb-10 items-center">
+					Alberto Trevizo
+					<a href="https://www.linkedin.com/in/albertotrevizo/"
+						target="_blank"
+						rel="noopener"
+						class="flex justify-center items-center"
+					>
+						<Badge>Open to work</Badge>
+					</a>
+				</h1>
+				<h2 class="text-xl lg:text-2xl text-wrap max-w-[700px]">
+					<span>5+ years experience as a Software engineer being part of high-performance teams that deliver innovative customer-centered products.</span> Web developer and raver
+				</h2>
+				<nav class="flex gap-4 mt-8 flex-wrap">
+					<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
+						<LinkedInIcon class="size-4 md:size-6"/>
+						LinkedIn
+					</SocialPill>
+					<SocialPill href="https://github.com/AlbertoTrevizo">
+						<GithubIcon class="size-4 md:size-6"/>
+						Github
+					</SocialPill>
+					<SocialPill href="mailto:betot.saenz@gmail.com">
+						<MailIcon class="size-4 md:size-6"/>
+						Mail
+					</SocialPill>
+				</nav>
+			</div>
 
-			<nav class="flex gap-4 mt-8 flex-wrap">
-				<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
-					<LinkedInIcon class="size-4 md:size-6"/>
-					LinkedIn
-				</SocialPill>
-				<SocialPill href="https://github.com/AlbertoTrevizo">
-					<GithubIcon class="size-4 md:size-6"/>
-					Github
-				</SocialPill>
-				<SocialPill href="mailto:betot.saenz@gmail.com">
-					<MailIcon class="size-4 md:size-6"/>
-					betot.saenz@gmail.com
-				</SocialPill>
-			</nav>
 		</SectionContainer>
 
 		<SectionContainer id="experience">
@@ -66,8 +75,8 @@ import Code from '../components/icons/Code.astro'
 			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center">
 				<Code class="size-7" />
 				Projects
-				<Projects />
 			</h2>
+			<Projects />
 		</SectionContainer>
 	</main>
 </Layout>
