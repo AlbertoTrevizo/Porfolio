@@ -1,0 +1,53 @@
+---
+
+const STACK = [
+    {   name: "HTML",
+        icon: "/icons/HTML.png" },
+    {   name: "Css",
+        icon: "/icons/css.png" },
+    {   name: "Javascript",
+        icon: "/icons/javascript.png" },
+    {   name: "Typescript",
+        icon: "/icons/typescript.png" },
+    {   name: "Tailwind",
+        icon: "/icons/tailwind.png" },
+    {   name: "React",
+        icon: "/icons/react.png" },
+    {   name: "Redux",
+        icon: "/icons/redux.png" },
+    {   name: "Astro",
+        icon: "/icons/astro.png" },
+    {   name: "nodejs",
+        icon: "/icons/nodejs.png" },
+    {   name: "Express",
+        icon: "/icons/express.png" },
+    {   name: "graphql",
+        icon: "/icons/graphql.png" },
+    {   name: "jest",
+        icon: "/icons/jest.png" },
+    {   name: "git",
+        icon: "/icons/git.png" },
+    {   name: "linux",
+        icon: "/icons/linux.png" },
+    {   name: "vscode",
+        icon: "/icons/vscode.png" },
+    {   name: "postgresql",
+        icon: "/icons/postgresql.png" },
+    {   name: "Mongodb",
+        icon: "/icons/mongodb.png" },
+    ]
+---
+<div class="flex flex-wrap gap-4 justify-center">
+    {
+        STACK.map(tool => (
+            <div class="w-20 h-20 rounded-3xl flex  
+            shadow backdrop-blur-3xl border border-gray-500 
+            justify-center items-center"
+            >
+                <div>
+                    <img src={tool.icon} alt="">
+                </div>
+            </div>
+        ))
+    }
+</div>

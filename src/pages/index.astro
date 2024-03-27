@@ -6,11 +6,13 @@ import SocialPill from '../components/SocialPill.astro'
 import Experience from '../components/Experience.astro'
 import SectionContainer from '../components/SectionContainer.astro'
 import Projects from '../components/Projects.astro'
+import StackList from '../components/StackList.astro'
 import LinkedInIcon from '../components/icons/LinkedIn.astro'
 import GithubIcon from '../components/icons/Github.astro'
 import MailIcon from '../components/icons/Mail.astro'
 import Briefcase from '../components/icons/Briefcase.astro'
 import Code from '../components/icons/Code.astro'
+import Stack from '../components/icons/Stack.astro'
 ---
 
 <Layout 
@@ -64,19 +66,27 @@ import Code from '../components/icons/Code.astro'
 		</SectionContainer>
 
 		<SectionContainer id="experience">
-			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center">
-				<Briefcase class="size-7" />
+			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+				<Briefcase class="size-10" />
 				Experience
 			</h2>
 			<Experience/>
 		</SectionContainer>
 
 		<SectionContainer id="projects">
-			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center">
-				<Code class="size-7" />
+			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+				<Code class="size-10" />
 				Projects
 			</h2>
 			<Projects />
+		</SectionContainer>
+
+		<SectionContainer id="stack">
+			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+				<Stack class="size-10" />
+				Stack
+			</h2>
+			<StackList />
 		</SectionContainer>
 	</main>
 </Layout>

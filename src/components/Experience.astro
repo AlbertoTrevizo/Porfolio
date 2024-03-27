@@ -1,30 +1,58 @@
 ---
+import type { Code } from "astro:components"
 import ExperienceItem from "./ExperienceItem.astro"
 
 const EXPERIENCIE = [
   {
-    date: "Actualmente...",
-    title: "Creador de Contenido",
-    company: "Twitch",
-    description:
-      "Divulgo sobre programación y desarrollo web en diferentes plataformas. Galardonado como mejor creador de contenido de habla no-inglesa en 2022 y mejor comunidad en 2023 por GitHub.",
-    link: "https://twitch.tv/midudev",
+    title: "Web Developer",
+    date: "June 2022 - june 2023",
+    descriptions: [
+      "Worked closely with teams in the United States and India to plan and organize the execution of a project.",
+      "Configuration of the ServiceNow platform's modules to ensure that websites operate properly in a team larger than eight people.",
+      "Daily meetings using the scrum technique to report advancements.",
+      "Automating the creation and configuration of an instance in GCP in preparation for migrating an application to the cloud through a terraform script."
+    ],
+    company: "Concentrix Catalyst",
   },
   {
-    date: "Septiembre 2022",
-    title: "Principal Frontend Engineer",
-    company: "Adevinta Spain",
-    description:
-      "Responsable de la plataforma, componentes y utilidades para la creación y desarrollo de aplicaciones web. Mejora de un 30% en la entrega de software. Implantación de medidas de integración continua y despliegue con A/B testing en más de 15 equipos.",
+    title: "Web Developer",
+    date: "December 2019 - June 2022",
+    descriptions: [
+      "As a tech lead of a team of three people, developing automated tests with Java and Selenium to ensure the proper operation of websites.",
+      "In charge of providing maintenance and fixes for a Perl-based server.",
+      "Repairing errors or updating mobile applications for libraries.",
+    ],
+    company: "Prokarma",
+  },
+  {
+    title: "Node developer jr",
+    date: "February 2019 - December 2019",
+    descriptions: [
+      "Development and maintenance of mobile applications with unity and server-side using NodeJS.",
+      "Creation of new features, tests and fixes for the server as well as the application.",
+      "Offering fixes for current issues or suggestions for new features.",
+      "Reporting newly found bugs.",
+    ],
+    company: "GammaPartners",
+  },
+  {
+    title: "Intern",
+    date: "November 2017 - February 2019",
+    descriptions: [
+      "Administration of the web pages for the UACH.",
+      "Creation and maintenance of features to the Content Management System made with Ruby on Rails.",
+      "Collaboration in the development of a dynamic template for future projects.",
+    ],
+    company: "Universidad Autónoma de Chihuahua (UACH)",
   },
 ]
 ---
 
-<ol class="relative border-s border-gray-200 ml-3">
+<ol class="relative border-s border-gray-200">
     {
         EXPERIENCIE.map( experience => (
             <li class="mb-10 ms-4">
-                <ExperienceItem {...experience} />
+              <ExperienceItem {...experience} />
             </li>
         ))
     }               
