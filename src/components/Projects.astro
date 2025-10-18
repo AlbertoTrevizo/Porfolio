@@ -4,8 +4,20 @@ import NextJS from "./icons/NextJS.astro"
 import Tailwind from "./icons/Tailwind.astro"
 import Link from "./icons/Link.astro"
 import LinkButton from "./LinkButton.astro"
+import HTML from "./icons/HTML.astro"
+import CSS from "./icons/CSS.astro"
 
 const TAGS = {
+  HTML: {
+    name: "HTML",
+    class: "bg-[#E44D26] text-white",
+    icon: HTML,
+  },
+  CSS: {
+    name: "CSS",
+    class: "bg-[#264DE4] text-white",
+    icon: CSS,
+  },
   NEXT: {
     name: "Next.js",
     class: "bg-black text-white",
@@ -19,13 +31,13 @@ const TAGS = {
 }
 const PROJECTS = [
   {
-    title: "Nuevery - Pagina web de tienda de nuez",
+    title: "Nuecery - Pagina web de tienda de nuez",
     description:
       "Pagina de nuez creada con Astro. Implementa un diseño responsivo y optimizado para SEO, brindando una experiencia de usuario atractiva y accesible en todos los dispositivos.",
-    link: "https://svgl.vercel.app/",
+    link: "https://nuecery.netlify.app/",
     github: "https://github.com/pheralb/svgl",
-    image: "/projects/svgl.webp",
-    tags: [TAGS.NEXT, TAGS.TAILWIND],
+    image: "/projects/nuecery.webp",
+    tags: [TAGS.HTML, TAGS.CSS],
   },
   {
     title: "AdventJS - Retos de programación con JavaScript y TypeScript",
