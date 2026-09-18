@@ -23,14 +23,7 @@ const { description, title } = Astro.props;
 	</head>
 	<body>
 		<div class="dark">
-			<div class="fixed left-0 top-0 -z-10 h-full w-full">
-				<div class="relative h-full w-full bg-black">
-					<div class="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-					</div>
-					<div class="absolute left-0 right-0 top-[-10%] h-[1000px] w-[1000px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#fbfbfb36,#000)]">
-					</div>
-				</div>
-			</div>
+			<div class="pointer-events-none fixed inset-0 z-50 opacity-[0.04]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;);"></div>
 			<Header />
 			<slot />
 			<Footer />

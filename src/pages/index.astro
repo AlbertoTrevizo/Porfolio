@@ -1,12 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
-import Badge from '../components/Badge.astro';
 import SocialPill from '../components/SocialPill.astro'
 import Experience from '../components/Experience.astro'
 import SectionContainer from '../components/SectionContainer.astro'
 import Projects from '../components/Projects.astro'
 import StackList from '../components/StackList.astro'
+import SentientSphere from '../components/SentientSphere.astro'
 import LinkedInIcon from '../components/icons/LinkedIn.astro'
 import GithubIcon from '../components/icons/Github.astro'
 import MailIcon from '../components/icons/Mail.astro'
@@ -20,50 +20,41 @@ import Stack from '../components/icons/Stack.astro'
 	description="Contrata a Alberto para crear tu aplicacion web."
 >
 	<main class="px-4">
-		<SectionContainer id="about" class="flex items-center flex-col lg:flex-row lg:w-[1024px]">
-			<img 
-				class="mb-4 object-fill" 
-				src="/BetoAvatar.png" 
-				alt="Alberto Foto"
-			/>
-			<!-- <Card title="Hello" body='hello there' href='hi'/> -->
-			<div class="relative h-full w-full rounded-xl 
-			shadow-[0px_0px_0px_1px_rgba(9,9,11,0.07),0px_2px_2px_0px_rgba(9,9,11,0.05)] 
-			dark:shadow-[0px_0px_0px_1px_rgba(255,255,255,0.1)] dark:before:pointer-events-none 
-			dark:before:absolute dark:before:-inset-px dark:before:rounded-xl 
-			dark:before:shadow-[0px_2px_8px_0px_rgba(0,_0,_0,_0.20),_0px_1px_0px_0px_rgba(255,_255,_255,_0.06)_inset] 
-			forced-colors:outline
-			px-10 py-10 max-w-2xl">
-				<h1 class="text-white text-3xl md:text-4xl lg:text-5xl font-bold flex flex-row gap-x-4 pb-6 lg:pb-10 items-center">
-					Alberto Trevizo
-					<a href="https://www.linkedin.com/in/albertotrevizo/"
-						target="_blank"
-						rel="noopener"
-						class="flex justify-center items-center"
-					>
-						<Badge>Open to work</Badge>
-					</a>
-				</h1>
-				<h2 class="text-xl lg:text-2xl text-wrap max-w-[700px]">
-					<span>5+ years experience as a Software engineer being part of high-performance teams that deliver innovative customer-centered products.</span> Web developer and raver
-				</h2>
-				<nav class="flex gap-4 mt-8 flex-wrap">
-					<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
-						<LinkedInIcon class="size-4 md:size-6"/>
-						LinkedIn
-					</SocialPill>
-					<SocialPill href="https://github.com/AlbertoTrevizo">
-						<GithubIcon class="size-4 md:size-6"/>
-						Github
-					</SocialPill>
-					<SocialPill href="mailto:betot.saenz@gmail.com">
-						<MailIcon class="size-4 md:size-6"/>
-						Mail
-					</SocialPill>
-				</nav>
-			</div>
+		<section id="about" class="relative w-full min-h-[85vh] flex items-center overflow-hidden -mx-4">
+			<SentientSphere />
+			<div class="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
-		</SectionContainer>
+			<div class="relative z-10 flex h-full min-h-[85vh] w-full flex-col justify-between px-6 py-16 md:px-12 md:py-20">
+				<h1 class="text-white font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.95]">
+					Alberto<br/>
+					<span class="font-serif font-normal italic">Trevizo</span>
+				</h1>
+
+				<div class="self-end max-w-xl text-right">
+					<h2 class="text-white font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.95]">
+						Software<br/>
+						<span class="font-serif font-normal italic">Engineer</span>
+					</h2>
+					<p class="mt-6 text-gray-300 text-base md:text-lg text-wrap">
+						I build things for the web, experimenting with AI, and occasionally disappear into a rave.
+					</p>
+					<nav class="flex gap-4 mt-6 flex-wrap justify-end">
+						<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
+							<LinkedInIcon class="size-4 md:size-6"/>
+							LinkedIn
+						</SocialPill>
+						<SocialPill href="https://github.com/AlbertoTrevizo">
+							<GithubIcon class="size-4 md:size-6"/>
+							Github
+						</SocialPill>
+						<SocialPill href="mailto:betot.saenz@gmail.com">
+							<MailIcon class="size-4 md:size-6"/>
+							Mail
+						</SocialPill>
+					</nav>
+				</div>
+			</div>
+		</section>
 
 		<SectionContainer id="experience">
 			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
