@@ -1,0 +1,134 @@
+---
+interface Project {
+	title: string;
+	category: string;
+	year: string;
+	image: string;
+	link: string;
+}
+
+const projects: Project[] = [
+	{
+		title: 'Nuecery',
+		category: 'Web Design',
+		year: '2025',
+		image: '/projects/nuecery.webp',
+		link: 'https://nuecery.netlify.app/',
+	},
+	{
+		title: 'AdventJS',
+		category: 'Programming Challenges',
+		year: '2023',
+		image: '/projects/adventjs.webp',
+		link: 'https://adventjs.dev',
+	},
+];
+---
+
+<div class="works-gallery relative">
+	<div class="flex flex-wrap items-stretch justify-center gap-4">
+		{projects.map((project) => (
+			<a
+				href={project.link}
+				target="_blank"
+				rel="noopener"
+				class="gallery-card group relative h-[420px] min-w-[180px] flex-[0.8] overflow-hidden rounded-[2.5rem] md:h-[600px]"
+			>
+				<img
+					src={project.image}
+					alt={project.title}
+					class="absolute inset-0 h-full w-full object-cover"
+				/>
+
+				<div class="gallery-caption absolute inset-x-4 bottom-4 rounded-3xl border border-white/10 bg-black/20 px-5 py-4 backdrop-blur-xl">
+					<p class="font-mono text-xs uppercase tracking-[0.2em] text-white">{project.title}</p>
+					<p class="font-mono text-xs uppercase tracking-[0.2em] text-gray-400">{project.category}</p>
+					<div class="my-2 h-px w-full bg-white/10"></div>
+					<p class="font-mono text-xs uppercase tracking-[0.2em] text-gray-400">{project.year}</p>
+				</div>
+			</a>
+		))}
+	</div>
+
+	<div class="gallery-cursor pointer-events-none fixed left-0 top-0 z-50 h-6 w-6 rounded-full bg-white/80 opacity-0 shadow-[0_0_20px_6px_rgba(255,255,255,0.35)]"></div>
+</div>
+
+<style>
+	.gallery-card {
+		flex: 0.8 1 0%;
+		opacity: 0.9;
+		cursor: none;
+		transition: flex 800ms cubic-bezier(0.4, 0, 0.2, 1), opacity 800ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 800ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.gallery-card img {
+		filter: grayscale(1) brightness(0.75);
+		transition: filter 700ms ease;
+	}
+
+	.gallery-card.is-active {
+		flex: 2 1 0%;
+		opacity: 1;
+		box-shadow: 0 25px 60px -15px rgba(255, 255, 255, 0.15);
+	}
+
+	.gallery-card.is-active img {
+		filter: grayscale(0) brightness(1);
+	}
+
+	.gallery-caption {
+		transform: translateY(2rem);
+		opacity: 0;
+		transition: transform 700ms ease, opacity 700ms ease;
+	}
+
+	.gallery-card.is-active .gallery-caption {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.gallery-cursor {
+		will-change: transform;
+		transition: opacity 200ms ease;
+	}
+
+	.gallery-cursor.is-visible {
+		opacity: 1;
+	}
+</style>
+
+<script>
+	const galleries = document.querySelectorAll<HTMLElement>('.works-gallery');
+
+	galleries.forEach((gallery) => {
+		const cards = gallery.querySelectorAll<HTMLElement>('.gallery-card');
+		const cursor = gallery.querySelector<HTMLElement>('.gallery-cursor');
+
+		cards.forEach((card) => {
+			card.addEventListener('mouseenter', () => {
+				cards.forEach((c) => c.classList.toggle('is-active', c === card));
+				cursor?.classList.add('is-visible');
+			});
+			card.addEventListener('mouseleave', () => {
+				card.classList.remove('is-active');
+				cursor?.classList.remove('is-visible');
+			});
+		});
+
+		if (cursor) {
+			let mouseX = 0;
+			let mouseY = 0;
+
+			window.addEventListener('mousemove', (event) => {
+				mouseX = event.clientX;
+				mouseY = event.clientY;
+			});
+
+			function loop() {
+				cursor!.style.transform = `translate3d(${mouseX - 12}px, ${mouseY - 12}px, 0)`;
+				requestAnimationFrame(loop);
+			}
+			loop();
+		}
+	});
+</script>

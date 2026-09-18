@@ -4,7 +4,7 @@ import Card from '../components/Card.astro';
 import SocialPill from '../components/SocialPill.astro'
 import Experience from '../components/Experience.astro'
 import SectionContainer from '../components/SectionContainer.astro'
-import Projects from '../components/Projects.astro'
+import WorksGallery from '../components/WorksGallery.astro'
 import StackList from '../components/StackList.astro'
 import SentientSphere from '../components/SentientSphere.astro'
 import LinkedInIcon from '../components/icons/LinkedIn.astro'
@@ -39,42 +39,30 @@ import Stack from '../components/icons/Stack.astro'
 						I build things for the web, experimenting with<br/>
 						AI, and occasionally disappear into a rave.
 					</p>
-					<nav class="flex gap-4 mt-6 flex-wrap justify-end">
-						<SocialPill href="https://www.linkedin.com/in/albertotrevizo/">
-							<LinkedInIcon class="size-4 md:size-6"/>
-							LinkedIn
-						</SocialPill>
-						<SocialPill href="https://github.com/AlbertoTrevizo">
-							<GithubIcon class="size-4 md:size-6"/>
-							Github
-						</SocialPill>
-						<SocialPill href="mailto:betot.saenz@gmail.com">
-							<MailIcon class="size-4 md:size-6"/>
-							Mail
-						</SocialPill>
-					</nav>
 				</div>
 			</div>
 		</section>
 
 		<SectionContainer id="experience">
-			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
 				<Briefcase class="size-10" />
 				Experience
 			</h2>
 			<Experience/>
 		</SectionContainer>
 
-		<SectionContainer id="projects">
-			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+		<section id="projects" class="w-full py-14">
+			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
 				<Code class="size-10" />
 				Projects
 			</h2>
-			<Projects />
-		</SectionContainer>
+			<div class="mx-auto w-full max-w-4xl">
+				<WorksGallery />
+			</div>
+		</section>
 
 		<SectionContainer id="stack">
-			<h2 class="text-3xl font-semibold mb-6 flex gap-x-3 items-center justify-center pb-4">
+			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
 				<Stack class="size-10" />
 				Stack
 			</h2>
