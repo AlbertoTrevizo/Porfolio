@@ -1,6 +1,6 @@
 ---
-import type { Code } from "astro:components"
 import ExperienceItem from "./ExperienceItem.astro"
+import Vinyl from "./Vinyl.astro"
 
 const EXPERIENCIE = [
   {
@@ -25,7 +25,7 @@ const EXPERIENCIE = [
     company: "Prokarma",
   },
   {
-    title: "Node developer jr",
+    title: "Node Developer Jr",
     date: "February 2019 - December 2019",
     descriptions: [
       "Development and maintenance of mobile applications with unity and server-side using NodeJS.",
@@ -48,13 +48,111 @@ const EXPERIENCIE = [
 ]
 ---
 
-<ol class="relative border-s border-gray-200">
-    {
-        EXPERIENCIE.map( experience => (
-            <li class="mb-10 ms-4">
-              <ExperienceItem {...experience} />
-            </li>
-        ))
-    }               
-</ol>
+<div class="experience-pin relative h-[300vh]" data-experience-pin>
+	<div class="experience-stage sticky top-[57px] flex h-[calc(100vh-57px)] w-full items-stretch overflow-hidden" data-experience-stage>
+		<div class="flex h-full flex-1 items-center justify-center pl-[6%]">
+			<div class="playlist relative z-10 h-[26rem] w-full max-w-xl md:h-[30rem]" data-playlist>
+				<ol class="relative h-full">
+					{EXPERIENCIE.map((experience, i) => (
+						<ExperienceItem {...experience} index={i + 1} />
+					))}
+				</ol>
+			</div>
+		</div>
 
+		<div class="relative flex h-full flex-1 items-center justify-end pr-[12%]">
+			<Vinyl class="pointer-events-none -mt-[10%] h-[30vh] w-[30vh] sm:h-[36vh] sm:w-[36vh] md:h-[44vh] md:w-[44vh] lg:h-[50vh] lg:w-[50vh]" />
+		</div>
+	</div>
+</div>
+
+<script>
+	const pin = document.querySelector<HTMLElement>('[data-experience-pin]');
+	const vinylReveal = document.querySelector<HTMLElement>('[data-vinyl-reveal]');
+	const vinylSpin = document.querySelector<HTMLElement>('[data-vinyl-spin]');
+	const needleArm = document.querySelector<HTMLElement>('[data-needle-arm]');
+	const playlist = document.querySelector<HTMLElement>('[data-playlist]');
+	const tracks = Array.from(document.querySelectorAll<HTMLElement>('[data-track]'));
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (pin && vinylReveal && vinylSpin && playlist && !reduceMotion) {
+		let ticking = false;
+		let spacing = window.innerWidth < 768 ? 130 : 190;
+
+		function render() {
+			ticking = false;
+
+			const rect = pin!.getBoundingClientRect();
+			const scrollable = Math.max(pin!.offsetHeight - window.innerHeight, 1);
+			const progress = Math.min(Math.max(-rect.top / scrollable, 0), 1);
+
+			let offsetRem = 0;
+			let opacity = 1;
+			if (progress < 0.1) {
+				const t = progress / 0.1;
+				offsetRem = (1 - t) * 8;
+				opacity = t;
+			} else if (progress > 0.85) {
+				const t = (progress - 0.85) / 0.15;
+				offsetRem = -t * 8;
+				opacity = 1 - t;
+			}
+			vinylReveal!.style.transform = `translateY(${offsetRem}rem)`;
+			vinylReveal!.style.opacity = String(Math.min(Math.max(opacity, 0), 1));
+
+			vinylSpin!.style.transform = `rotate(${progress * 900}deg)`;
+
+			if (needleArm) {
+				needleArm.style.transform = `rotate(${42 - progress * 8}deg)`;
+			}
+
+			const playlistProgress = Math.min(Math.max((progress - 0.1) / 0.12, 0), 1);
+			playlist!.style.opacity = String(playlistProgress);
+			playlist!.style.pointerEvents = playlistProgress > 0.5 ? 'auto' : 'none';
+
+			const listProgress = Math.min(Math.max((progress - 0.2) / 0.8, 0), 1);
+			const focus = listProgress * (tracks.length - 1);
+
+			tracks.forEach((track, i) => {
+				const delta = i - focus;
+				const abs = Math.min(Math.abs(delta), 2);
+				const scale = 1 - abs * 0.22;
+				const opacity = Math.max(0, 1 - abs * 0.65);
+				track.style.transform = `translateY(calc(-50% + ${delta * spacing}px)) scale(${scale})`;
+				track.style.opacity = String(opacity);
+				track.style.zIndex = String(100 - Math.round(abs * 10));
+			});
+		}
+
+		function onScroll() {
+			if (!ticking) {
+				ticking = true;
+				requestAnimationFrame(render);
+			}
+		}
+
+		function onResize() {
+			spacing = window.innerWidth < 768 ? 130 : 190;
+			onScroll();
+		}
+
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onResize);
+		render();
+	} else {
+		vinylReveal?.style.setProperty('transform', 'none');
+		vinylReveal?.style.setProperty('opacity', '1');
+		playlist?.style.setProperty('opacity', '1');
+		tracks.forEach((track, i) => {
+			track.style.transform = `translateY(calc(-50% + ${(i - (tracks.length - 1) / 2) * 100}px))`;
+			track.style.opacity = '1';
+		});
+	}
+
+	tracks.forEach((track) => {
+		track.querySelector('[data-track-trigger]')?.addEventListener('click', () => {
+			track.classList.toggle('is-expanded');
+		});
+	});
+</script>
