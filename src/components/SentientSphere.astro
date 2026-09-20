@@ -151,7 +151,7 @@
 		sphere.rotation.x = THREE.MathUtils.lerp(sphere.rotation.x, pointer.y * 0.3, 0.05);
 		sphere.rotation.z = THREE.MathUtils.lerp(sphere.rotation.z, pointer.x * 0.3, 0.05);
 
-		const scrollOffset = Math.min(window.scrollY * 0.4, 196);
+		const scrollOffset = Math.min(window.scrollY * 0.3, 300);
 		canvas.style.transform = `translateY(-${scrollOffset}px)`;
 
 		renderer.render(scene, camera);

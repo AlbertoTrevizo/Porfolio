@@ -3,15 +3,58 @@ gap-4 py-5 px-6 md:px-10 w-full mx-auto
 backdrop-blur-sm z-20 border-b border-gray-600"
 >
 	<nav class="absolute left-1/2 -translate-x-1/2 flex flex-row gap-x-16 font-mono text-xs uppercase tracking-[0.2em] opacity-80">
-		<a href="#top">Home</a>
-		<a href="#about">About</a>
-		<a href="#experience">Experience</a>
-		<a href="#projects">Projects</a>
-		<a href="#stack">Stack</a>
+		<a href="#about" class="nav-link" data-nav-link="about">About</a>
+		<a href="#experience" class="nav-link" data-nav-link="experience">Experience</a>
+		<a href="#projects" class="nav-link" data-nav-link="projects">Projects</a>
+		<a href="#stack" class="nav-link" data-nav-link="stack">Stack</a>
 	</nav>
+
+	<span class="nav-indicator pointer-events-none absolute bottom-0 h-[3px] bg-white opacity-0" data-nav-indicator></span>
 
 	<div class="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-gray-300">
 		<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
 		Open to work
 	</div>
 </header>
+
+<script>
+	const header = document.querySelector<HTMLElement>('header');
+	const indicator = document.querySelector<HTMLElement>('[data-nav-indicator]');
+	const links = Array.from(document.querySelectorAll<HTMLElement>('[data-nav-link]'));
+
+	function setActive(id: string) {
+		const link = links.find((l) => l.dataset.navLink === id);
+		if (!header || !indicator || !link) return;
+
+		const headerRect = header.getBoundingClientRect();
+		const linkRect = link.getBoundingClientRect();
+
+		indicator.style.left = `${linkRect.left - headerRect.left}px`;
+		indicator.style.width = `${linkRect.width}px`;
+		indicator.style.opacity = '1';
+	}
+
+	const observedSections = ['about', 'experience', 'projects', 'stack']
+		.map((id) => document.getElementById(id))
+		.filter((el): el is HTMLElement => el !== null);
+
+	if (observedSections.length) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						setActive(entry.target.id);
+					}
+				});
+			},
+			{ rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+		);
+		observedSections.forEach((section) => observer.observe(section));
+	}
+</script>
+
+<style>
+	.nav-indicator {
+		transition: left 300ms ease, width 300ms ease, opacity 300ms ease;
+	}
+</style>

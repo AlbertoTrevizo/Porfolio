@@ -10,9 +10,6 @@ import SentientSphere from '../components/SentientSphere.astro'
 import LinkedInIcon from '../components/icons/LinkedIn.astro'
 import GithubIcon from '../components/icons/Github.astro'
 import MailIcon from '../components/icons/Mail.astro'
-import Briefcase from '../components/icons/Briefcase.astro'
-import Code from '../components/icons/Code.astro'
-import Stack from '../components/icons/Stack.astro'
 ---
 
 <Layout 
@@ -31,7 +28,7 @@ import Stack from '../components/icons/Stack.astro'
 				</h1>
 
 				<div class="self-end max-w-xl text-right">
-					<h2 class="text-white font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.95]">
+					<h2 class="text-white font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.95]" data-role-heading>
 						Software<br/>
 						<span class="font-serif font-normal italic">Engineer</span>
 					</h2>
@@ -44,28 +41,16 @@ import Stack from '../components/icons/Stack.astro'
 		</section>
 
 		<section id="experience" class="relative w-full py-14 -mx-4 px-4 md:px-12">
-			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
-				<Briefcase class="size-10" />
-				Experience
-			</h2>
 			<Experience/>
 		</section>
 
 		<section id="projects" class="w-full py-14">
-			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
-				<Code class="size-10" />
-				Projects
-			</h2>
 			<div class="mx-auto w-full max-w-4xl">
 				<WorksGallery />
 			</div>
 		</section>
 
-		<SectionContainer id="stack">
-			<h2 class="text-white font-bold text-3xl flex gap-x-3 items-center justify-center mb-6 pb-4">
-				<Stack class="size-10" />
-				Stack
-			</h2>
+		<SectionContainer id="stack" class="mt-24 md:mt-[10.5rem] mb-10 md:mb-12">
 			<StackList />
 		</SectionContainer>
 	</main>

@@ -50,7 +50,7 @@ const EXPERIENCIE = [
 
 <div class="experience-pin relative h-[300vh]" data-experience-pin>
 	<div class="experience-stage sticky top-[57px] flex h-[calc(100vh-57px)] w-full items-stretch overflow-hidden" data-experience-stage>
-		<div class="flex h-full flex-1 items-center justify-center pl-[6%]">
+		<div class="flex h-full flex-1 items-center justify-center pl-[9%]">
 			<div class="playlist relative z-10 h-[26rem] w-full max-w-xl md:h-[30rem]" data-playlist>
 				<ol class="relative h-full">
 					{EXPERIENCIE.map((experience, i) => (
@@ -60,8 +60,8 @@ const EXPERIENCIE = [
 			</div>
 		</div>
 
-		<div class="relative flex h-full flex-1 items-center justify-end pr-[12%]">
-			<Vinyl class="pointer-events-none -mt-[10%] h-[30vh] w-[30vh] sm:h-[36vh] sm:w-[36vh] md:h-[44vh] md:w-[44vh] lg:h-[50vh] lg:w-[50vh]" />
+		<div class="relative flex h-full flex-1 items-center justify-end pr-[16%]">
+			<Vinyl class="pointer-events-none mt-[calc(-10%+200px)] h-[45vh] w-[45vh] sm:h-[54vh] sm:w-[54vh] md:h-[66vh] md:w-[66vh] lg:h-[75vh] lg:w-[75vh]" />
 		</div>
 	</div>
 </div>
@@ -69,49 +69,95 @@ const EXPERIENCIE = [
 <script>
 	const pin = document.querySelector<HTMLElement>('[data-experience-pin]');
 	const vinylReveal = document.querySelector<HTMLElement>('[data-vinyl-reveal]');
-	const vinylSpin = document.querySelector<HTMLElement>('[data-vinyl-spin]');
 	const needleArm = document.querySelector<HTMLElement>('[data-needle-arm]');
 	const playlist = document.querySelector<HTMLElement>('[data-playlist]');
 	const tracks = Array.from(document.querySelectorAll<HTMLElement>('[data-track]'));
+	const roleHeading = document.querySelector<HTMLElement>('[data-role-heading]');
 
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	if (pin && vinylReveal && vinylSpin && playlist && !reduceMotion) {
+	if (pin && vinylReveal && playlist && !reduceMotion) {
 		let ticking = false;
-		let spacing = window.innerWidth < 768 ? 130 : 190;
+		let spacing = window.innerWidth < 768 ? 165 : 235;
+
+		// The scroll range starts as soon as the "Software" heading touches the header
+		// line (instead of waiting for the pinned section itself to reach the top), so the
+		// vinyl is already appearing while the hero is still scrolling away — no black gap.
+		const HEADER_HEIGHT = 57;
+		let startY = 0;
+		let endY = 1;
+
+		// Timeline (as a fraction of the pinned scroll range):
+		// 0 -> VINYL_SETTLE      vinyl's own reveal animation (opacity/slide) finishes
+		// VINYL_SETTLE -> ...    vinyl starts spinning (handled in Vinyl.astro using the same threshold)
+		// ... -> PLAYLIST_IN_START   the stage itself is still scrolling into place (not yet
+		//                            sticky), so the vinyl keeps visually moving up the screen
+		//                            even though its own animation already finished; the playlist
+		//                            waits for that motion to stop too, computed dynamically below
+		// PLAYLIST_IN_START -> PLAYLIST_IN_END   playlist fades in, once the vinyl is fully still
+		// PLAYLIST_IN_END -> PLAYLIST_OUT_START  stable window: tracks scroll through the coverflow
+		// PLAYLIST_OUT_START -> PLAYLIST_OUT_END playlist fades out first, the same way it faded in
+		// PLAYLIST_OUT_END -> 1                  only once the playlist is gone does the vinyl move up and disappear
+		const VINYL_SETTLE = 0.045;
+		const PLAYLIST_FADE_SPAN = 0.085;
+		let PLAYLIST_IN_START = 0.075;
+		let PLAYLIST_IN_END = 0.16;
+		const PLAYLIST_OUT_START = 0.77;
+		const PLAYLIST_OUT_END = 0.85;
+
+		function computeRange() {
+			if (roleHeading) {
+				startY = roleHeading.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT;
+			} else {
+				startY = pin!.getBoundingClientRect().top + window.scrollY;
+			}
+			endY = pin!.getBoundingClientRect().bottom + window.scrollY - window.innerHeight;
+
+			const pinTopDocY = pin!.getBoundingClientRect().top + window.scrollY;
+			const stickyY = pinTopDocY - HEADER_HEIGHT;
+			const stickyProgress = Math.min(Math.max((stickyY - startY) / Math.max(endY - startY, 1), 0), 1);
+
+			PLAYLIST_IN_START = Math.max(VINYL_SETTLE, stickyProgress);
+			PLAYLIST_IN_END = Math.min(PLAYLIST_IN_START + PLAYLIST_FADE_SPAN, PLAYLIST_OUT_START);
+		}
+		computeRange();
 
 		function render() {
 			ticking = false;
 
-			const rect = pin!.getBoundingClientRect();
-			const scrollable = Math.max(pin!.offsetHeight - window.innerHeight, 1);
-			const progress = Math.min(Math.max(-rect.top / scrollable, 0), 1);
+			const progress = Math.min(Math.max((window.scrollY - startY) / Math.max(endY - startY, 1), 0), 1);
 
 			let offsetRem = 0;
 			let opacity = 1;
-			if (progress < 0.1) {
-				const t = progress / 0.1;
+			if (progress < VINYL_SETTLE) {
+				const t = progress / VINYL_SETTLE;
 				offsetRem = (1 - t) * 8;
 				opacity = t;
-			} else if (progress > 0.85) {
-				const t = (progress - 0.85) / 0.15;
+			} else if (progress > PLAYLIST_OUT_END) {
+				const t = (progress - PLAYLIST_OUT_END) / (1 - PLAYLIST_OUT_END);
 				offsetRem = -t * 8;
 				opacity = 1 - t;
 			}
 			vinylReveal!.style.transform = `translateY(${offsetRem}rem)`;
 			vinylReveal!.style.opacity = String(Math.min(Math.max(opacity, 0), 1));
 
-			vinylSpin!.style.transform = `rotate(${progress * 900}deg)`;
-
 			if (needleArm) {
 				needleArm.style.transform = `rotate(${42 - progress * 8}deg)`;
 			}
 
-			const playlistProgress = Math.min(Math.max((progress - 0.1) / 0.12, 0), 1);
-			playlist!.style.opacity = String(playlistProgress);
-			playlist!.style.pointerEvents = playlistProgress > 0.5 ? 'auto' : 'none';
+			let playlistOpacity = 0;
+			if (progress >= PLAYLIST_IN_START && progress < PLAYLIST_IN_END) {
+				playlistOpacity = (progress - PLAYLIST_IN_START) / (PLAYLIST_IN_END - PLAYLIST_IN_START);
+			} else if (progress >= PLAYLIST_IN_END && progress < PLAYLIST_OUT_START) {
+				playlistOpacity = 1;
+			} else if (progress >= PLAYLIST_OUT_START && progress < PLAYLIST_OUT_END) {
+				playlistOpacity = 1 - (progress - PLAYLIST_OUT_START) / (PLAYLIST_OUT_END - PLAYLIST_OUT_START);
+			}
+			playlistOpacity = Math.min(Math.max(playlistOpacity, 0), 1);
+			playlist!.style.opacity = String(playlistOpacity);
+			playlist!.style.pointerEvents = playlistOpacity > 0.5 ? 'auto' : 'none';
 
-			const listProgress = Math.min(Math.max((progress - 0.2) / 0.8, 0), 1);
+			const listProgress = Math.min(Math.max((progress - PLAYLIST_IN_END) / (PLAYLIST_OUT_START - PLAYLIST_IN_END), 0), 1);
 			const focus = listProgress * (tracks.length - 1);
 
 			tracks.forEach((track, i) => {
@@ -126,6 +172,7 @@ const EXPERIENCIE = [
 		}
 
 		function onScroll() {
+			tracks.forEach((track) => track.classList.remove('is-expanded'));
 			if (!ticking) {
 				ticking = true;
 				requestAnimationFrame(render);
@@ -133,7 +180,8 @@ const EXPERIENCIE = [
 		}
 
 		function onResize() {
-			spacing = window.innerWidth < 768 ? 130 : 190;
+			spacing = window.innerWidth < 768 ? 165 : 235;
+			computeRange();
 			onScroll();
 		}
 
