@@ -115,7 +115,7 @@ const EXPERIENCIE = [
 
 		// Timeline (as a fraction of the pinned scroll range):
 		// 0 -> VINYL_SETTLE      vinyl's own reveal animation (opacity/slide) finishes
-		// VINYL_SETTLE -> ...    vinyl starts spinning (handled in Vinyl.astro using the same threshold)
+		// VINYL_SETTLE -> ...    vinyl starts spinning (Vinyl.astro reads data-spin, set in render())
 		// ... -> PLAYLIST_IN_START   the stage itself is still scrolling into place (not yet
 		//                            sticky), so the vinyl keeps visually moving up the screen
 		//                            even though its own animation already finished; the playlist
@@ -184,6 +184,7 @@ const EXPERIENCIE = [
 			ticking = false;
 
 			const progress = Math.min(Math.max((window.scrollY - startY) / Math.max(endY - startY, 1), 0), 1);
+			pin!.dataset.spin = String(Math.max(progress - VINYL_SETTLE, 0)); // read by Vinyl.astro
 
 			const exitT = Math.min(Math.max((progress - PLAYLIST_OUT_END) / (1 - PLAYLIST_OUT_END), 0), 1);
 			// Ease-out on the extra rise: its speed decays to zero exactly when the widget reaches

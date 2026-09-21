@@ -98,37 +98,22 @@ const projects: Project[] = [
 </style>
 
 <script>
-	const galleries = document.querySelectorAll<HTMLElement>('.works-gallery');
+	const gallery = document.querySelector<HTMLElement>('.works-gallery')!;
+	const cards = gallery.querySelectorAll<HTMLElement>('.gallery-card');
+	const cursor = gallery.querySelector<HTMLElement>('.gallery-cursor')!;
 
-	galleries.forEach((gallery) => {
-		const cards = gallery.querySelectorAll<HTMLElement>('.gallery-card');
-		const cursor = gallery.querySelector<HTMLElement>('.gallery-cursor');
-
-		cards.forEach((card) => {
-			card.addEventListener('mouseenter', () => {
-				cards.forEach((c) => c.classList.toggle('is-active', c === card));
-				cursor?.classList.add('is-visible');
-			});
-			card.addEventListener('mouseleave', () => {
-				card.classList.remove('is-active');
-				cursor?.classList.remove('is-visible');
-			});
+	cards.forEach((card) => {
+		card.addEventListener('mouseenter', () => {
+			cards.forEach((c) => c.classList.toggle('is-active', c === card));
+			cursor.classList.add('is-visible');
 		});
+		card.addEventListener('mouseleave', () => {
+			card.classList.remove('is-active');
+			cursor.classList.remove('is-visible');
+		});
+	});
 
-		if (cursor) {
-			let mouseX = 0;
-			let mouseY = 0;
-
-			window.addEventListener('mousemove', (event) => {
-				mouseX = event.clientX;
-				mouseY = event.clientY;
-			});
-
-			function loop() {
-				cursor!.style.transform = `translate3d(${mouseX - 12}px, ${mouseY - 12}px, 0)`;
-				requestAnimationFrame(loop);
-			}
-			loop();
-		}
+	window.addEventListener('mousemove', (event) => {
+		cursor.style.transform = `translate3d(${event.clientX - 12}px, ${event.clientY - 12}px, 0)`;
 	});
 </script>

@@ -1,15 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Card from '../components/Card.astro';
-import SocialPill from '../components/SocialPill.astro'
 import Experience from '../components/Experience.astro'
-import SectionContainer from '../components/SectionContainer.astro'
 import WorksGallery from '../components/WorksGallery.astro'
 import StackList from '../components/StackList.astro'
 import SentientSphere from '../components/SentientSphere.astro'
-import LinkedInIcon from '../components/icons/LinkedIn.astro'
-import GithubIcon from '../components/icons/Github.astro'
-import MailIcon from '../components/icons/Mail.astro'
 ---
 
 <Layout 
@@ -50,8 +44,8 @@ import MailIcon from '../components/icons/Mail.astro'
 			</div>
 		</section>
 
-		<SectionContainer id="stack" class="mt-24 md:mt-[10.5rem] mb-10 md:mb-12">
+		<section id="stack" class="mt-24 md:mt-[10.5rem] mb-10 md:mb-12 w-full mx-auto sm:w-[740px] py-14">
 			<StackList />
-		</SectionContainer>
+		</section>
 	</main>
 </Layout>
