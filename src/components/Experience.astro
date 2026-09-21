@@ -4,8 +4,28 @@ import Vinyl from "./Vinyl.astro"
 
 const EXPERIENCIE = [
   {
+    title: "Generalist & QA",
+    date: "February 2026 - Present [Remote]",
+    descriptions: [
+      "Designed and wrote tasks for computer-use AI training environments, ranging from single-application workflows to complex, multi-application scenarios requiring cross-app data usage and decision-making.",
+      "Performed QA on task prompts, ensuring clarity, feasibility within the target environment, alignment between expected and actual outcomes, and adherence to established guidelines.",
+      "Conducted session reviews by evaluating model-generated trajectories, determining task validity based on model performance and verifier accuracy (e.g., identifying overly narrow or overly broad verifiers).",
+    ],
+    company: "Fleet Fellow",
+  },
+  {
+    title: "AI Model Trainer",
+    date: "June 2024 - February 2026 [Remote]",
+    descriptions: [
+      "Designed and implemented training tasks for AI models, analyzing and correcting model responses and reasoning to identify and resolve errors, inconsistencies, and edge cases.",
+      "Followed detailed annotation guidelines and contributed feedback to improve task design and data quality.",
+      "Worked independently in a remote environment while meeting strict accuracy and productivity targets.",
+    ],
+    company: "Outlier",
+  },
+  {
     title: "Web Developer",
-    date: "June 2022 - june 2023",
+    date: "June 2022 - june 2023 [Remote]",
     descriptions: [
       "Worked closely with teams in the United States and India to plan and organize the execution of a project.",
       "Configuration of the ServiceNow platform's modules to ensure that websites operate properly in a team larger than eight people.",
@@ -16,13 +36,13 @@ const EXPERIENCIE = [
   },
   {
     title: "Web Developer",
-    date: "December 2019 - June 2022",
+    date: "December 2019 - June 2022 [Remote]",
     descriptions: [
       "As a tech lead of a team of three people, developing automated tests with Java and Selenium to ensure the proper operation of websites.",
       "In charge of providing maintenance and fixes for a Perl-based server.",
       "Repairing errors or updating mobile applications for libraries.",
     ],
-    company: "Prokarma",
+    company: "Prokarma (now Concentrix Catalyst)",
   },
   {
     title: "Node Developer Jr",
@@ -33,7 +53,7 @@ const EXPERIENCIE = [
       "Offering fixes for current issues or suggestions for new features.",
       "Reporting newly found bugs.",
     ],
-    company: "GammaPartners",
+    company: "GammaPartners (now Concentrix Catalyst)",
   },
   {
     title: "Intern",
@@ -48,7 +68,7 @@ const EXPERIENCIE = [
 ]
 ---
 
-<div class="experience-pin relative h-[300vh]" data-experience-pin>
+<div class="experience-pin relative h-[400vh]" data-experience-pin>
 	<div class="experience-stage sticky top-[57px] flex h-[calc(100vh-57px)] w-full items-stretch overflow-hidden" data-experience-stage>
 		<div class="flex h-full flex-1 items-center justify-center pl-[9%]">
 			<div class="playlist relative z-10 h-[26rem] w-full max-w-xl md:h-[30rem]" data-playlist>
@@ -73,6 +93,8 @@ const EXPERIENCIE = [
 	const playlist = document.querySelector<HTMLElement>('[data-playlist]');
 	const tracks = Array.from(document.querySelectorAll<HTMLElement>('[data-track]'));
 	const roleHeading = document.querySelector<HTMLElement>('[data-role-heading]');
+	const projects = document.getElementById('projects');
+	const stage = document.querySelector<HTMLElement>('[data-experience-stage]');
 
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -86,6 +108,10 @@ const EXPERIENCIE = [
 		const HEADER_HEIGHT = 57;
 		let startY = 0;
 		let endY = 1;
+		let projectsDrop = 0;
+		let projectsRestY = 0;
+		let vinylBottomRest = 0;
+		let remPx = 16;
 
 		// Timeline (as a fraction of the pinned scroll range):
 		// 0 -> VINYL_SETTLE      vinyl's own reveal animation (opacity/slide) finishes
@@ -119,6 +145,38 @@ const EXPERIENCIE = [
 
 			PLAYLIST_IN_START = Math.max(VINYL_SETTLE, stickyProgress);
 			PLAYLIST_IN_END = Math.min(PLAYLIST_IN_START + PLAYLIST_FADE_SPAN, PLAYLIST_OUT_START);
+
+			// Projects rise in while the vinyl leaves. A negative margin pulls the section up so
+			// that, at progress 1 (vinyl gone), it is already centered in the viewport. Until then
+			// a transform (projectsDrop) keeps it just below the fold and slides it up to zero
+			// over the same PLAYLIST_OUT_END -> 1 window the vinyl uses to disappear.
+			if (projects) {
+				projects.style.marginTop = '0px';
+				projects.style.transform = 'none';
+				const rect = projects.getBoundingClientRect();
+				const naturalTop = rect.top + window.scrollY;
+				const restY = Math.max(HEADER_HEIGHT, (HEADER_HEIGHT + window.innerHeight - rect.height) / 2);
+				const lift = Math.max(naturalTop - (endY + restY), 0);
+				const outStartScrollY = startY + PLAYLIST_OUT_END * (endY - startY);
+				const yAtOutStart = restY + (endY - outStartScrollY);
+				projectsDrop = Math.max(window.innerHeight - yAtOutStart, 0);
+				projectsRestY = restY;
+				projects.style.marginTop = `${-lift}px`;
+			}
+
+			// Where the visible disc's bottom edge sits (viewport px) while the stage is pinned,
+			// measured with the vinyl at rest. The disc fills ~72% of the canvas height around
+			// its center, so 0.9 leaves margin for the wobble; the stage clips at the viewport bottom.
+			if (stage) {
+				vinylReveal!.style.transform = 'none';
+				const vinylRect = vinylReveal!.getBoundingClientRect();
+				const stageTop = stage.getBoundingClientRect().top;
+				vinylBottomRest = Math.min(
+					HEADER_HEIGHT + (vinylRect.top - stageTop) + vinylRect.height * 0.9,
+					window.innerHeight,
+				);
+				remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+			}
 		}
 		computeRange();
 
@@ -127,19 +185,36 @@ const EXPERIENCIE = [
 
 			const progress = Math.min(Math.max((window.scrollY - startY) / Math.max(endY - startY, 1), 0), 1);
 
+			const exitT = Math.min(Math.max((progress - PLAYLIST_OUT_END) / (1 - PLAYLIST_OUT_END), 0), 1);
+			// Ease-out on the extra rise: its speed decays to zero exactly when the widget reaches
+			// the center, so from there on it only moves with the regular scroll (no sudden slowdown).
+			const remainingDrop = (1 - exitT) * (1 - exitT) * projectsDrop;
+
 			let offsetRem = 0;
+			let pushPx = 0;
 			let opacity = 1;
 			if (progress < VINYL_SETTLE) {
 				const t = progress / VINYL_SETTLE;
 				offsetRem = (1 - t) * 8;
 				opacity = t;
 			} else if (progress > PLAYLIST_OUT_END) {
-				const t = (progress - PLAYLIST_OUT_END) / (1 - PLAYLIST_OUT_END);
-				offsetRem = -t * 8;
-				opacity = 1 - t;
+				offsetRem = -exitT * 8;
+				opacity = 1 - exitT;
+
+				// The projects widget pushes the vinyl up: its bottom edge never dips below the
+				// widget's top edge, so the two never overlap while the vinyl fades out.
+				if (projects) {
+					const widgetTop = projectsRestY + Math.max(endY - window.scrollY, 0) + remainingDrop;
+					const vinylBottom = vinylBottomRest + offsetRem * remPx;
+					pushPx = Math.max(vinylBottom - widgetTop, 0);
+				}
 			}
-			vinylReveal!.style.transform = `translateY(${offsetRem}rem)`;
+			vinylReveal!.style.transform = `translateY(calc(${offsetRem}rem - ${pushPx}px))`;
 			vinylReveal!.style.opacity = String(Math.min(Math.max(opacity, 0), 1));
+
+			if (projects) {
+				projects.style.transform = exitT >= 1 ? 'none' : `translateY(${remainingDrop}px)`;
+			}
 
 			if (needleArm) {
 				needleArm.style.transform = `rotate(${42 - progress * 8}deg)`;
@@ -187,6 +262,7 @@ const EXPERIENCIE = [
 
 		window.addEventListener('scroll', onScroll, { passive: true });
 		window.addEventListener('resize', onResize);
+		window.addEventListener('load', onResize);
 		render();
 	} else {
 		vinylReveal?.style.setProperty('transform', 'none');
