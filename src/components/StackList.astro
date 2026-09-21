@@ -35,19 +35,307 @@ const STACK = [
         icon: "/icons/postgresql.png" },
     {   name: "Mongodb",
         icon: "/icons/mongodb.png" },
+    {   name: "Claude Code",
+        icon: "/icons/claude.svg" },
+    {   name: "ChatGPT",
+        icon: "/icons/chatgpt.svg" },
     ]
 ---
-<div class="flex flex-wrap gap-4 justify-center">
-    {
-        STACK.map(tool => (
-            <div class="w-20 h-20 rounded-3xl flex  
-            shadow backdrop-blur-3xl border border-gray-500 
-            justify-center items-center"
-            >
-                <div>
-                    <img src={tool.icon} alt="">
+<div class="relative" data-stack>
+    <div class="flex flex-wrap gap-4 justify-center">
+        {
+            STACK.map(tool => (
+                <div class="w-20 h-20 rounded-3xl flex
+                shadow backdrop-blur-3xl border border-gray-500
+                justify-center items-center"
+                data-stack-tile
+                >
+                    <div>
+                        <img src={tool.icon} alt="">
+                    </div>
                 </div>
-            </div>
-        ))
-    }
+            ))
+        }
+    </div>
 </div>
+
+<script>
+    import Matter from 'matter-js';
+
+    const { Engine, Bodies, Body, Composite } = Matter;
+
+    const root = document.querySelector<HTMLElement>('[data-stack]');
+    const floorLine = document.querySelector<HTMLElement>('footer hr');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (root && floorLine && !reduceMotion) {
+        const tiles = Array.from(root.querySelectorAll<HTMLElement>('[data-stack-tile]'));
+
+        // When the page bottom is reached the tiles first sway like pictures hanging on a wall
+        // (pivoting around their top edge, the swing growing as if the nail were coming loose),
+        // then they drop bottom row first onto the footer line, where a physics engine piles them
+        // up. Every tile is a real rigid body from the very first frame (hanging ones are static
+        // and follow the swing), so nothing can ever pass through anything else.
+        const SWING_MS = 1000;
+        const ROW_DELAY_MS = 110;
+        const DROP_JITTER_MS = 90;
+        const SWING_OMEGA = (2 * Math.PI) / 850; // rad/ms, shared so neighbours never collide while swaying
+        const SWING_AMPLITUDE = (7 * Math.PI) / 180;
+        const CORNER_RADIUS = 24; // matches rounded-3xl
+        // Rolling resistance: a rounded square keeps tumbling far too easily in a rigid-body
+        // engine, so a little spin is bled off every sub-step (per 1/480 s).
+        const SPIN_DAMPING = 0.9975;
+
+        // Fixed sub-steps keep fast tiles from tunnelling and make stacks much more stable.
+        const STEP_MS = 1000 / 480;
+        const CALM_FRAMES = 45;
+        const MAX_SETTLE_MS = 9000;
+
+        type Item = {
+            el: HTMLElement;
+            x: number;
+            y: number;
+            w: number;
+            h: number;
+            lag: number;
+            dropAt: number;
+            released: boolean;
+            body: Matter.Body;
+        };
+
+        let state: 'idle' | 'running' | 'settled' = 'idle';
+        let items: Item[] = [];
+        let engine: Matter.Engine | null = null;
+        let frameId = 0;
+        let startTime = 0;
+        let lastTime = 0;
+        let accumulator = 0;
+        let lastReleaseAt = 0;
+        let calmFrames = 0;
+        let swingDirection = 1;
+
+        // Angle of a picture swaying around its top-center nail; the amplitude keeps growing
+        // until the moment it lets go. `lag` makes the sway travel across the wall like a wave.
+        function swingAngle(item: Item, t: number) {
+            const loosening = 0.3 + 0.7 * Math.min(t / SWING_MS, 1);
+            return swingDirection * SWING_AMPLITUDE * loosening * Math.sin(SWING_OMEGA * Math.max(t - item.lag, 0));
+        }
+
+        // Center of the tile while it hangs from its top-center pivot at the given angle.
+        function hangingCenter(item: Item, angle: number) {
+            const halfH = item.h / 2;
+            return {
+                x: item.x + item.w / 2 - Math.sin(angle) * halfH,
+                y: item.y + Math.cos(angle) * halfH,
+            };
+        }
+
+        function place(item: Item, cx: number, cy: number, angle: number) {
+            item.el.style.transform = `translate(${cx - item.w / 2}px, ${cy - item.h / 2}px) rotate(${angle}rad)`;
+        }
+
+        function release(item: Item, t: number) {
+            const angle = swingAngle(item, t);
+            const angularSpeed = (swingAngle(item, t + 1) - angle) * 1000; // rad/s (t is in ms)
+            const halfH = item.h / 2;
+
+            Body.setStatic(item.body, false);
+            // Matter measures speed per 1/60 s step, so convert from per-second values. The tile
+            // keeps the momentum of the swing, plus a small random nudge as it slips off the nail.
+            Body.setAngularVelocity(item.body, angularSpeed / 60 + (Math.random() - 0.5) * 0.02);
+            Body.setVelocity(item.body, {
+                x: (-Math.cos(angle) * halfH * angularSpeed) / 60 + (Math.random() - 0.5) * 0.6,
+                y: (-Math.sin(angle) * halfH * angularSpeed) / 60,
+            });
+
+            item.el.style.transformOrigin = '50% 50%';
+            item.released = true;
+            lastReleaseAt = t;
+        }
+
+        function frame(now: number) {
+            frameId = requestAnimationFrame(frame);
+            const elapsed = now - startTime;
+
+            for (const item of items) {
+                if (!item.released && elapsed >= item.dropAt) release(item, elapsed);
+            }
+
+            accumulator += Math.min(now - lastTime, 100);
+            lastTime = now;
+            while (accumulator >= STEP_MS) {
+                // Hanging tiles follow the swing inside the simulation too, so falling tiles
+                // land on them instead of passing through.
+                const t = now - startTime - accumulator;
+                for (const item of items) {
+                    if (item.released) continue;
+                    const angle = swingAngle(item, t);
+                    const center = hangingCenter(item, angle);
+                    Body.setPosition(item.body, center);
+                    Body.setAngle(item.body, angle);
+                }
+                Engine.update(engine!, STEP_MS);
+                for (const item of items) {
+                    if (item.released) Body.setAngularVelocity(item.body, item.body.angularVelocity * SPIN_DAMPING);
+                }
+                accumulator -= STEP_MS;
+            }
+
+            let calm = true;
+            for (const item of items) {
+                if (item.released) {
+                    place(item, item.body.position.x, item.body.position.y, item.body.angle);
+                    if (item.body.speed > 0.03 || item.body.angularSpeed > 0.001) calm = false;
+                } else {
+                    const angle = swingAngle(item, elapsed);
+                    item.el.style.transform = `translate(${item.x}px, ${item.y}px) rotate(${angle}rad)`;
+                    calm = false;
+                }
+            }
+
+            calmFrames = calm ? calmFrames + 1 : 0;
+            if (calmFrames >= CALM_FRAMES || elapsed - lastReleaseAt > MAX_SETTLE_MS) {
+                cancelAnimationFrame(frameId);
+                state = 'settled';
+            }
+        }
+
+        function start() {
+            state = 'running';
+            // Which way the wall shakes first is random, so the pile does not always drift to one side.
+            swingDirection = Math.random() < 0.5 ? -1 : 1;
+            const rootRect = root!.getBoundingClientRect();
+            const lineRect = floorLine!.getBoundingClientRect();
+            const floorY = lineRect.top - rootRect.top;
+            const width = rootRect.width;
+            // The tiles rest on the footer line, so the floor spans the whole line (not just the
+            // narrower stack section) — otherwise an invisible wall would hold the pile up at the
+            // section edges. The limits never cut into where the tiles start.
+            const floorLeft = Math.min(lineRect.left - rootRect.left, 0);
+            const floorRight = Math.max(lineRect.right - rootRect.left, width);
+
+            engine = Engine.create({
+                // No sleeping: a tile balanced on a corner moves very slowly at first and would be
+                // frozen in place before it gets the chance to topple.
+                enableSleeping: false,
+                positionIterations: 20,
+                velocityIterations: 16,
+            });
+            engine.gravity.y = 1;
+
+            const solid = { isStatic: true, friction: 0.9, frictionStatic: 1, restitution: 0 };
+            Composite.add(engine.world, [
+                Bodies.rectangle((floorLeft + floorRight) / 2, floorY + 50, floorRight - floorLeft + 200, 100, solid),
+                Bodies.rectangle(floorLeft - 50, floorY - 1000, 100, 2400, solid),
+                Bodies.rectangle(floorRight + 50, floorY - 1000, 100, 2400, solid),
+            ]);
+
+            const rowYs = Array.from(new Set(tiles.map((tile) => Math.round(tile.getBoundingClientRect().top)))).sort((a, b) => b - a);
+
+            items = tiles.map((tile) => {
+                const rect = tile.getBoundingClientRect();
+                const el = tile.cloneNode(true) as HTMLElement;
+                el.removeAttribute('data-stack-tile');
+                Object.assign(el.style, {
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    // Already at its final spot when inserted: without this the clones sit at
+                    // (0, 0), all on top of each other, until the first animation frame.
+                    transform: `translate(${rect.left - rootRect.left}px, ${rect.top - rootRect.top}px)`,
+                    margin: '0',
+                    width: `${rect.width}px`,
+                    height: `${rect.height}px`,
+                    pointerEvents: 'none',
+                    willChange: 'transform',
+                    transformOrigin: '50% 0',
+                    // The blur is invisible on this flat background and too costly to repaint every frame.
+                    backdropFilter: 'none',
+                });
+                root!.appendChild(el);
+                tile.style.visibility = 'hidden';
+
+                const x = rect.left - rootRect.left;
+                const y = rect.top - rootRect.top;
+                const rowFromBottom = rowYs.indexOf(Math.round(rect.top));
+
+                // A little variation in weight, bounciness and grip so the pile never looks cloned.
+                const body = Bodies.rectangle(x + rect.width / 2, y + rect.height / 2, rect.width, rect.height, {
+                    chamfer: { radius: CORNER_RADIUS },
+                    density: 0.0009 + Math.random() * 0.0008,
+                    restitution: 0.04 + Math.random() * 0.14,
+                    friction: 0.28 + Math.random() * 0.14,
+                    frictionStatic: 0.4 + Math.random() * 0.2,
+                    frictionAir: 0.004,
+                    slop: 0.01,
+                });
+                Body.setStatic(body, true);
+                Composite.add(engine!.world, body);
+
+                return {
+                    el,
+                    x,
+                    y,
+                    w: rect.width,
+                    h: rect.height,
+                    lag: ((x + rect.width / 2) / width) * 160,
+                    dropAt: SWING_MS + rowFromBottom * ROW_DELAY_MS + Math.random() * DROP_JITTER_MS,
+                    released: false,
+                    body,
+                };
+            });
+
+            startTime = lastTime = performance.now();
+            accumulator = 0;
+            lastReleaseAt = 0;
+            calmFrames = 0;
+            frameId = requestAnimationFrame(frame);
+        }
+
+        function reset() {
+            cancelAnimationFrame(frameId);
+            if (engine) {
+                Composite.clear(engine.world, false);
+                Engine.clear(engine);
+                engine = null;
+            }
+            items.forEach((item) => item.el.remove());
+            items = [];
+            tiles.forEach((tile) => (tile.style.visibility = ''));
+            state = 'idle';
+        }
+
+        function check() {
+            const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+            if (state === 'idle' && atBottom) {
+                start();
+            } else if (state !== 'idle' && root!.getBoundingClientRect().top > window.innerHeight + 100) {
+                // The user scrolled back up past the stack: put everything back so it can play again.
+                reset();
+            }
+        }
+
+        let ticking = false;
+        function onScroll() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                ticking = false;
+                check();
+            });
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        // Only a width change resets the pile: mobile browsers fire resize whenever the URL bar
+        // shows/hides, which must not replay the animation.
+        let lastWidth = window.innerWidth;
+        window.addEventListener('resize', () => {
+            if (window.innerWidth !== lastWidth) {
+                lastWidth = window.innerWidth;
+                if (state !== 'idle') reset();
+            }
+            onScroll();
+        });
+        check();
+    }
+</script>
