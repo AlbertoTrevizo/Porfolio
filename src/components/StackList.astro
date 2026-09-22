@@ -3,37 +3,37 @@
 const STACK = [
     {   name: "HTML",
         icon: "/icons/HTML.png" },
-    {   name: "Css",
+    {   name: "CSS",
         icon: "/icons/css.png" },
-    {   name: "Javascript",
+    {   name: "JavaScript",
         icon: "/icons/javascript.png" },
-    {   name: "Typescript",
+    {   name: "TypeScript",
         icon: "/icons/typescript.png" },
-    {   name: "Tailwind",
+    {   name: "Tailwind CSS",
         icon: "/icons/tailwind.png" },
     {   name: "React",
         icon: "/icons/react.png" },
     {   name: "Redux",
         icon: "/icons/redux.png" },
     {   name: "Astro",
-        icon: "/icons/astro.png" },
-    {   name: "nodejs",
+        icon: "/icons/astro.png", black: true },
+    {   name: "Node.js",
         icon: "/icons/nodejs.png" },
     {   name: "Express",
-        icon: "/icons/express.png" },
-    {   name: "graphql",
+        icon: "/icons/express.png", black: true },
+    {   name: "GraphQL",
         icon: "/icons/graphql.png" },
-    {   name: "jest",
+    {   name: "Jest",
         icon: "/icons/jest.png" },
-    {   name: "git",
+    {   name: "Git",
         icon: "/icons/git.png" },
-    {   name: "linux",
+    {   name: "Linux",
         icon: "/icons/linux.png" },
-    {   name: "vscode",
+    {   name: "VS Code",
         icon: "/icons/vscode.png" },
-    {   name: "postgresql",
+    {   name: "PostgreSQL",
         icon: "/icons/postgresql.png" },
-    {   name: "Mongodb",
+    {   name: "MongoDB",
         icon: "/icons/mongodb.png" },
     {   name: "Claude Code",
         icon: "/icons/claude.svg" },
@@ -45,18 +45,29 @@ const STACK = [
     <div class="flex flex-wrap gap-4 justify-center">
         {
             STACK.map(tool => (
-                <div class="w-20 h-20 rounded-3xl flex
+                <div class="group w-20 h-20 rounded-3xl flex
                 shadow backdrop-blur-3xl border border-gray-500
                 justify-center items-center"
                 data-stack-tile
+                data-name={tool.name}
                 >
                     <div>
-                        <img src={tool.icon} alt="">
+                        {/* black icons are inverted so they show on the dark tile, before and after hover */}
+                        <img
+                            src={tool.icon}
+                            alt={tool.name}
+                            class:list={[
+                                "opacity-80 brightness-150 grayscale transition duration-300",
+                                "group-hover:scale-125 group-hover:opacity-100 group-hover:brightness-100 group-hover:grayscale-0",
+                                { invert: tool.black },
+                            ]}
+                        >
                     </div>
                 </div>
             ))
         }
     </div>
+    <div class="pointer-events-none fixed left-0 top-0 z-40 whitespace-nowrap rounded-full border border-white/10 bg-black/60 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white opacity-0 backdrop-blur-md transition-opacity duration-200 will-change-transform" data-stack-tip></div>
 </div>
 
 <script>
@@ -65,8 +76,32 @@ const STACK = [
     const { Engine, Bodies, Body, Composite } = Matter;
 
     const root = document.querySelector<HTMLElement>('[data-stack]');
+    const tip = document.querySelector<HTMLElement>('[data-stack-tip]');
     const floorLine = document.querySelector<HTMLElement>('footer hr');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Name pop-up. It works for the static tiles and for the physics clones alike (both carry
+    // data-name) and follows the hovered tile every frame, since clones keep moving while pointed at.
+    let hovered: HTMLElement | null = null;
+    let following = false;
+    function followTip() {
+        following = !!hovered;
+        if (!hovered || !tip) return;
+        const r = hovered.getBoundingClientRect();
+        tip.style.transform = `translate(${r.left + r.width / 2}px, ${r.top - 10}px) translate(-50%, -100%)`;
+        requestAnimationFrame(followTip);
+    }
+    function hoverTile(tile: HTMLElement | null) {
+        if (!tip || tile === hovered) return;
+        hovered = tile;
+        tip.style.opacity = tile ? '1' : '0';
+        if (tile) {
+            tip.textContent = tile.dataset.name ?? '';
+            if (!following) followTip();
+        }
+    }
+    root?.addEventListener('pointermove', (e) => hoverTile((e.target as Element).closest<HTMLElement>('[data-name]')));
+    root?.addEventListener('pointerleave', () => hoverTile(null));
 
     if (root && floorLine && !reduceMotion) {
         const tiles = Array.from(root.querySelectorAll<HTMLElement>('[data-stack-tile]'));
@@ -246,7 +281,6 @@ const STACK = [
                     margin: '0',
                     width: `${rect.width}px`,
                     height: `${rect.height}px`,
-                    pointerEvents: 'none',
                     willChange: 'transform',
                     transformOrigin: '50% 0',
                     // The blur is invisible on this flat background and too costly to repaint every frame.
@@ -299,6 +333,7 @@ const STACK = [
                 Engine.clear(engine);
                 engine = null;
             }
+            hoverTile(null);
             items.forEach((item) => item.el.remove());
             items = [];
             tiles.forEach((tile) => (tile.style.visibility = ''));
