@@ -97,8 +97,7 @@ const { class: className } = Astro.props;
 		let velocity = 0; // radians per frame, positive = forward (same way as the scroll spin)
 		let scratchAngle = 0; // added on top of the scroll-driven spin
 		let lastSpinAngle = 0;
-		let playlistShift = 0; // in tracks, read by Experience.astro
-		let publishedShift = 0;
+		let scrollCarry = 0; // sub-pixel scroll left over between frames
 
 		function discHit(event: PointerEvent) {
 			const rect = canvas!.getBoundingClientRect();
@@ -212,8 +211,9 @@ const { class: className } = Astro.props;
 
 			// Experience.astro publishes the scroll-driven spin (0 until the vinyl has settled).
 			const spinAngle = THREE.MathUtils.degToRad(Number(pin?.dataset.spin ?? 0) * 900);
-			// While held, the hand overrides the scroll spin; on release it resumes from where the disc is.
-			if (dragging) scratchAngle -= spinAngle - lastSpinAngle;
+			// While held or coasting, the hand overrides the scroll spin (which the disc itself is
+			// now driving); once it stops, the scroll spin resumes from where the disc is.
+			if (dragging || velocity !== 0) scratchAngle -= spinAngle - lastSpinAngle;
 			lastSpinAngle = spinAngle;
 
 			if (dragging) {
@@ -226,17 +226,25 @@ const { class: className } = Astro.props;
 			disc.rotation.z = spinAngle + scratchAngle;
 			updateAudio(velocity);
 
-			// The playlist follows the disc (half a turn = one track) and stays where it's left,
-			// stopping at its first/last track (bounds published by Experience.astro).
-			playlistShift = THREE.MathUtils.clamp(
-				playlistShift + velocity / Math.PI,
-				Number(pin?.dataset.scratchMin ?? 0),
-				Number(pin?.dataset.scratchMax ?? 0),
-			);
-			if (pin && playlistShift !== publishedShift) {
-				publishedShift = playlistShift;
-				pin.dataset.scratch = String(playlistShift);
-				pin.dispatchEvent(new Event('scratch'));
+			// The disc scrolls the page (half a turn = one track), so the playlist and the scroll
+			// position stay in sync. It stops at the first/last track, using the scroll range
+			// published by Experience.astro, but never pulls the page back into that range.
+			if (velocity !== 0 && pin) {
+				scrollCarry += (velocity / Math.PI) * Number(pin.dataset.trackPx ?? 0);
+				const step = Math.trunc(scrollCarry);
+				if (step !== 0) {
+					scrollCarry -= step;
+					const y = window.scrollY;
+					const top = THREE.MathUtils.clamp(
+						y + step,
+						Math.min(y, Number(pin.dataset.scrollMin ?? y)),
+						Math.max(y, Number(pin.dataset.scrollMax ?? y)),
+					);
+					// 'instant' skips the page's smooth scroll-behavior, which would lag every frame.
+					if (top !== y) window.scrollTo({ top, behavior: 'instant' });
+				}
+			} else {
+				scrollCarry = 0;
 			}
 
 			renderer.render(scene, camera);

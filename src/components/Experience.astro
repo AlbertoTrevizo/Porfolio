@@ -177,6 +177,13 @@ const EXPERIENCIE = [
 				);
 				remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 			}
+
+			// Scroll range where the tracks move, read by Vinyl.astro so scratching scrolls the page.
+			const listStartY = startY + PLAYLIST_IN_END * (endY - startY);
+			const listEndY = startY + PLAYLIST_OUT_START * (endY - startY);
+			pin!.dataset.scrollMin = String(listStartY);
+			pin!.dataset.scrollMax = String(listEndY);
+			pin!.dataset.trackPx = String((listEndY - listStartY) / Math.max(tracks.length - 1, 1));
 		}
 		computeRange();
 
@@ -234,13 +241,7 @@ const EXPERIENCIE = [
 			playlist!.style.pointerEvents = playlistOpacity > 0.5 ? 'auto' : 'none';
 
 			const listProgress = Math.min(Math.max((progress - PLAYLIST_IN_END) / (PLAYLIST_OUT_START - PLAYLIST_IN_END), 0), 1);
-			// Vinyl.astro publishes the scratch offset (in tracks); it keeps it within these bounds
-			// so scratching scrolls the playlist between its first and last track.
-			const scrollFocus = listProgress * (tracks.length - 1);
-			pin!.dataset.scratchMin = String(-scrollFocus);
-			pin!.dataset.scratchMax = String(tracks.length - 1 - scrollFocus);
-			const scratch = Number(pin!.dataset.scratch ?? 0);
-			const focus = Math.min(Math.max(scrollFocus + scratch, 0), tracks.length - 1);
+			const focus = listProgress * (tracks.length - 1);
 
 			tracks.forEach((track, i) => {
 				const delta = i - focus;
@@ -272,7 +273,6 @@ const EXPERIENCIE = [
 		}
 
 		window.addEventListener('scroll', onScroll, { passive: true });
-		pin.addEventListener('scratch', schedule);
 		window.addEventListener('resize', onResize);
 		window.addEventListener('load', onResize);
 		render();

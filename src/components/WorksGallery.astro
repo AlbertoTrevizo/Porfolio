@@ -1,7 +1,7 @@
 ---
 interface Project {
 	title: string;
-	category: string;
+	description: string;
 	year: string;
 	image: string;
 	link: string;
@@ -10,14 +10,14 @@ interface Project {
 const projects: Project[] = [
 	{
 		title: 'Nuecery',
-		category: 'Web Design',
+		description: 'Landing page for a walnut brand, with a clean layout focused on its products.',
 		year: '2025',
 		image: '/projects/nuecery.webp',
 		link: 'https://nuecery.netlify.app/',
 	},
 	{
 		title: 'MyFinance',
-		category: 'Personal Finance',
+		description: 'Personal finance app to track income, expenses and budgets in one place.',
 		year: '2026',
 		image: '/projects/MyFinances.webp',
 		link: 'https://my-finances-f95n4zd28-albertotrevizo.vercel.app/',
@@ -40,11 +40,12 @@ const projects: Project[] = [
 					class="absolute inset-0 h-full w-full object-cover"
 				/>
 
-				<div class="gallery-caption absolute inset-x-4 bottom-4 rounded-3xl border border-white/10 bg-black/20 px-5 py-4 backdrop-blur-xl">
-					<p class="font-mono text-xs uppercase tracking-[0.2em] text-white">{project.title}</p>
-					<p class="font-mono text-xs uppercase tracking-[0.2em] text-gray-400">{project.category}</p>
-					<div class="my-2 h-px w-full bg-white/10"></div>
-					<p class="font-mono text-xs uppercase tracking-[0.2em] text-gray-400">{project.year}</p>
+				<div class="gallery-caption absolute inset-x-4 bottom-4 rounded-3xl border border-white/10 bg-black/70 px-5 py-4 backdrop-blur-xl">
+					<div class="flex items-baseline justify-between gap-4">
+						<p class="text-lg font-semibold text-white">{project.title}</p>
+						<p class="font-mono text-xs tracking-[0.2em] text-gray-300">{project.year}</p>
+					</div>
+					<p class="mt-1 text-sm leading-snug text-gray-200">{project.description}</p>
 				</div>
 			</a>
 		))}
@@ -83,6 +84,7 @@ const projects: Project[] = [
 	.gallery-card.is-active .gallery-caption {
 		transform: translateY(0);
 		opacity: 1;
+		transition-delay: 300ms;
 	}
 </style>
 
