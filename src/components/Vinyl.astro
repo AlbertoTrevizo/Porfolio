@@ -124,6 +124,8 @@ const { class: className } = Astro.props;
 		});
 
 		canvas.addEventListener('pointermove', (event) => {
+			// A button no longer held means the release was missed (e.g. let go outside the window).
+			if (dragging && !(event.buttons & 1)) release();
 			if (dragging) {
 				pendingDelta += ((event.clientX - lastX) / discRadius) * dragSign;
 				lastX = event.clientX;
@@ -139,6 +141,9 @@ const { class: className } = Astro.props;
 		};
 		canvas.addEventListener('pointerup', release);
 		canvas.addEventListener('pointercancel', release);
+		// Capture can end without a pointerup reaching the canvas (text drag over the playlist, etc.).
+		canvas.addEventListener('lostpointercapture', release);
+		window.addEventListener('blur', release);
 
 		// Synthesized scratch: a short vocal-like "ahh" looped forward or reversed, its rate and
 		// volume following the disc speed (Web Audio can't play a buffer at a negative rate).
@@ -221,10 +226,13 @@ const { class: className } = Astro.props;
 			disc.rotation.z = spinAngle + scratchAngle;
 			updateAudio(velocity);
 
-			// The playlist follows the hand (half a turn = one track), then eases back on release.
-			playlistShift = dragging
-				? THREE.MathUtils.clamp(playlistShift + velocity / Math.PI, -1.5, 1.5)
-				: Math.abs(playlistShift) < 1e-3 ? 0 : playlistShift * 0.9;
+			// The playlist follows the disc (half a turn = one track) and stays where it's left,
+			// stopping at its first/last track (bounds published by Experience.astro).
+			playlistShift = THREE.MathUtils.clamp(
+				playlistShift + velocity / Math.PI,
+				Number(pin?.dataset.scratchMin ?? 0),
+				Number(pin?.dataset.scratchMax ?? 0),
+			);
 			if (pin && playlistShift !== publishedShift) {
 				publishedShift = playlistShift;
 				pin.dataset.scratch = String(playlistShift);

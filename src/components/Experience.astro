@@ -234,9 +234,13 @@ const EXPERIENCIE = [
 			playlist!.style.pointerEvents = playlistOpacity > 0.5 ? 'auto' : 'none';
 
 			const listProgress = Math.min(Math.max((progress - PLAYLIST_IN_END) / (PLAYLIST_OUT_START - PLAYLIST_IN_END), 0), 1);
-			// Vinyl.astro publishes the scratch offset (in tracks) while the disc is scratched.
+			// Vinyl.astro publishes the scratch offset (in tracks); it keeps it within these bounds
+			// so scratching scrolls the playlist between its first and last track.
+			const scrollFocus = listProgress * (tracks.length - 1);
+			pin!.dataset.scratchMin = String(-scrollFocus);
+			pin!.dataset.scratchMax = String(tracks.length - 1 - scrollFocus);
 			const scratch = Number(pin!.dataset.scratch ?? 0);
-			const focus = Math.min(Math.max(listProgress * (tracks.length - 1) + scratch, -0.5), tracks.length - 0.5);
+			const focus = Math.min(Math.max(scrollFocus + scratch, 0), tracks.length - 1);
 
 			tracks.forEach((track, i) => {
 				const delta = i - focus;
