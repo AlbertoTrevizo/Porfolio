@@ -8,7 +8,7 @@ const { class: className } = Astro.props;
 
 <div class:list={['relative', className]} data-vinyl-outer>
 	<div class="vinyl-reveal h-full w-full" data-vinyl-reveal>
-		<canvas class="h-full w-full" data-vinyl-canvas></canvas>
+		<canvas class="pointer-events-auto h-full w-full touch-pan-y select-none" data-vinyl-canvas></canvas>
 
 		<div class="vinyl-needle" data-needle>
 			<span class="needle-base"></span>
@@ -86,14 +86,150 @@ const { class: className } = Astro.props;
 		new ResizeObserver(resize).observe(container);
 		resize();
 
+		// Scratch: grab the disc and drag horizontally to spin it by hand, like a turntable.
+		const DISC_FRACTION = 0.72; // visible disc radius / half the canvas height
+		const RPM_33 = 0.058; // radians per frame at ~33rpm, the "normal" playback speed
+		let dragging = false;
+		let lastX = 0;
+		let dragSign = 1;
+		let discRadius = 1;
+		let pendingDelta = 0;
+		let velocity = 0; // radians per frame, positive = forward (same way as the scroll spin)
+		let scratchAngle = 0; // added on top of the scroll-driven spin
+		let lastSpinAngle = 0;
+		let playlistShift = 0; // in tracks, read by Experience.astro
+		let publishedShift = 0;
+
+		function discHit(event: PointerEvent) {
+			const rect = canvas!.getBoundingClientRect();
+			const dx = event.clientX - (rect.left + rect.width / 2);
+			const dy = event.clientY - (rect.top + rect.height / 2);
+			const radius = (Math.min(rect.width, rect.height) / 2) * DISC_FRACTION;
+			const visible = Number(container!.style.opacity || 1) > 0.5;
+			return { inside: visible && Math.hypot(dx, dy) <= radius, top: dy < 0, radius };
+		}
+
+		canvas.addEventListener('pointerdown', (event) => {
+			const hit = discHit(event);
+			if (!hit.inside || event.button !== 0) return;
+			event.preventDefault();
+			dragging = true;
+			lastX = event.clientX;
+			// The hand pushes the edge it holds: dragging right on the top half turns the disc clockwise.
+			dragSign = hit.top ? -1 : 1;
+			discRadius = hit.radius;
+			canvas.setPointerCapture(event.pointerId);
+			canvas.style.cursor = 'grabbing';
+			initAudio();
+		});
+
+		canvas.addEventListener('pointermove', (event) => {
+			if (dragging) {
+				pendingDelta += ((event.clientX - lastX) / discRadius) * dragSign;
+				lastX = event.clientX;
+			} else {
+				canvas.style.cursor = discHit(event).inside ? 'grab' : '';
+			}
+		});
+
+		const release = () => {
+			if (!dragging) return;
+			dragging = false;
+			canvas.style.cursor = 'grab';
+		};
+		canvas.addEventListener('pointerup', release);
+		canvas.addEventListener('pointercancel', release);
+
+		// Synthesized scratch: a short vocal-like "ahh" looped forward or reversed, its rate and
+		// volume following the disc speed (Web Audio can't play a buffer at a negative rate).
+		let audio: {
+			ctx: AudioContext;
+			filter: BiquadFilterNode;
+			fwd: { src: AudioBufferSourceNode; gain: GainNode };
+			rev: { src: AudioBufferSourceNode; gain: GainNode };
+		} | null = null;
+
+		function initAudio() {
+			if (audio) {
+				audio.ctx.resume();
+				return;
+			}
+			const ctx = new AudioContext();
+			const length = Math.floor(ctx.sampleRate * 0.8);
+			const samples = new Float32Array(length);
+			let phase = 0;
+			for (let i = 0; i < length; i++) {
+				const t = i / length;
+				phase += (160 + 260 * Math.sin(Math.PI * t)) / ctx.sampleRate;
+				const saw = 2 * (phase % 1) - 1;
+				samples[i] = (saw * 0.6 + (Math.random() * 2 - 1) * 0.4) * Math.sin(Math.PI * t);
+			}
+
+			const filter = ctx.createBiquadFilter();
+			filter.type = 'bandpass';
+			filter.Q.value = 0.7;
+			const master = ctx.createGain();
+			master.gain.value = 0.3;
+			filter.connect(master).connect(ctx.destination);
+
+			const voice = (data: Float32Array) => {
+				const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+				buffer.copyToChannel(data, 0);
+				const src = ctx.createBufferSource();
+				src.buffer = buffer;
+				src.loop = true;
+				const gain = ctx.createGain();
+				gain.gain.value = 0;
+				src.connect(gain).connect(filter);
+				src.start();
+				return { src, gain };
+			};
+			audio = { ctx, filter, fwd: voice(samples), rev: voice(samples.slice().reverse()) };
+		}
+
+		function updateAudio(v: number) {
+			if (!audio) return;
+			const speed = Math.abs(v) / RPM_33;
+			const level = Math.min(speed, 2) * 0.5;
+			const rate = Math.min(Math.max(speed, 0.1), 3);
+			const now = audio.ctx.currentTime;
+			audio.fwd.gain.gain.setTargetAtTime(v > 0 ? level : 0, now, 0.02);
+			audio.rev.gain.gain.setTargetAtTime(v < 0 ? level : 0, now, 0.02);
+			audio.fwd.src.playbackRate.setTargetAtTime(rate, now, 0.02);
+			audio.rev.src.playbackRate.setTargetAtTime(rate, now, 0.02);
+			audio.filter.frequency.setTargetAtTime(600 + 900 * Math.min(speed, 3), now, 0.02);
+		}
+
 		const startTime = performance.now();
 		function animate() {
 			requestAnimationFrame(animate);
 			material.uniforms.uTime.value = (performance.now() - startTime) / 1000;
 
 			// Experience.astro publishes the scroll-driven spin (0 until the vinyl has settled).
-			const spinProgress = Number(pin?.dataset.spin ?? 0);
-			disc.rotation.z = THREE.MathUtils.degToRad(spinProgress * 900);
+			const spinAngle = THREE.MathUtils.degToRad(Number(pin?.dataset.spin ?? 0) * 900);
+			// While held, the hand overrides the scroll spin; on release it resumes from where the disc is.
+			if (dragging) scratchAngle -= spinAngle - lastSpinAngle;
+			lastSpinAngle = spinAngle;
+
+			if (dragging) {
+				velocity = pendingDelta;
+				pendingDelta = 0;
+			} else {
+				velocity = Math.abs(velocity) < 1e-4 ? 0 : velocity * 0.92; // momentum after release
+			}
+			scratchAngle += velocity;
+			disc.rotation.z = spinAngle + scratchAngle;
+			updateAudio(velocity);
+
+			// The playlist follows the hand (half a turn = one track), then eases back on release.
+			playlistShift = dragging
+				? THREE.MathUtils.clamp(playlistShift + velocity / Math.PI, -1.5, 1.5)
+				: Math.abs(playlistShift) < 1e-3 ? 0 : playlistShift * 0.9;
+			if (pin && playlistShift !== publishedShift) {
+				publishedShift = playlistShift;
+				pin.dataset.scratch = String(playlistShift);
+				pin.dispatchEvent(new Event('scratch'));
+			}
 
 			renderer.render(scene, camera);
 		}

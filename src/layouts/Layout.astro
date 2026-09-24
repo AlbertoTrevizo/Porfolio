@@ -27,6 +27,14 @@ const { description, title } = Astro.props;
 		<Header />
 		<slot />
 		<Footer />
+		<!-- Shared white-dot cursor: any component shows it by toggling `dot-cursor` on <html>. -->
+		<div class="dot-cursor-el pointer-events-none fixed left-0 top-0 z-[60] h-6 w-6 rounded-full bg-white/80 shadow-[0_0_20px_6px_rgba(255,255,255,0.35)]"></div>
+		<script>
+			const dot = document.querySelector<HTMLElement>('.dot-cursor-el')!;
+			window.addEventListener('mousemove', (event) => {
+				dot.style.transform = `translate3d(${event.clientX - 12}px, ${event.clientY - 12}px, 0)`;
+			});
+		</script>
 	</body>
 </html>
 <style is:global>
@@ -45,6 +53,21 @@ const { description, title } = Astro.props;
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+	}
+
+	.dot-cursor-el {
+		opacity: 0;
+		will-change: transform;
+		transition: opacity 200ms ease;
+	}
+
+	html.dot-cursor .dot-cursor-el {
+		opacity: 1;
+	}
+
+	html.dot-cursor,
+	html.dot-cursor * {
+		cursor: none !important;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

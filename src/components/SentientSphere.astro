@@ -22,10 +22,22 @@
 	scene.add(sphere);
 
 	const pointer = { x: 0, y: 0 };
+	const mouse = { x: 0, y: 0, active: false };
 	window.addEventListener('pointermove', (event) => {
 		pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
 		pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+		mouse.x = event.clientX;
+		mouse.y = event.clientY;
+		mouse.active = event.pointerType === 'mouse';
 	});
+	document.documentElement.addEventListener('mouseleave', () => (mouse.active = false));
+
+	// Hover test against the undisplaced sphere (analytic, so no per-triangle raycast).
+	const raycaster = new THREE.Raycaster();
+	const bounds = new THREE.Sphere(new THREE.Vector3(), 1.8);
+	const ndc = new THREE.Vector2();
+	const hitPoint = new THREE.Vector3();
+	let hovering = false;
 
 	function resize() {
 		const { clientWidth, clientHeight } = container;
@@ -43,8 +55,21 @@
 		material.uniforms.uTime.value = (performance.now() - startTime) / 1000;
 
 		sphere.rotation.y += 0.0015;
-		sphere.rotation.x = THREE.MathUtils.lerp(sphere.rotation.x, pointer.y * 0.3, 0.05);
-		sphere.rotation.z = THREE.MathUtils.lerp(sphere.rotation.z, pointer.x * 0.3, 0.05);
+		sphere.rotation.x = THREE.MathUtils.lerp(sphere.rotation.x, pointer.y * 0.45, 0.05);
+		sphere.rotation.z = THREE.MathUtils.lerp(sphere.rotation.z, pointer.x * 0.45, 0.05);
+
+		const rect = canvas.getBoundingClientRect();
+		ndc.set(((mouse.x - rect.left) / rect.width) * 2 - 1, -((mouse.y - rect.top) / rect.height) * 2 + 1);
+		raycaster.setFromCamera(ndc, camera);
+		const hit = mouse.active && raycaster.ray.intersectSphere(bounds, hitPoint) !== null;
+		if (hit) {
+			material.uniforms.uPointer.value.lerp(sphere.worldToLocal(hitPoint), 0.15);
+		}
+		material.uniforms.uPointerStrength.value = THREE.MathUtils.lerp(material.uniforms.uPointerStrength.value, hit ? 1 : 0, 0.06);
+		if (hit !== hovering) {
+			hovering = hit;
+			document.documentElement.classList.toggle('dot-cursor', hit);
+		}
 
 		const scrollOffset = Math.min(window.scrollY * 0.3, 300);
 		canvas.style.transform = `translateY(-${scrollOffset}px)`;

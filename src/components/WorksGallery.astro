@@ -49,8 +49,6 @@ const projects: Project[] = [
 			</a>
 		))}
 	</div>
-
-	<div class="gallery-cursor pointer-events-none fixed left-0 top-0 z-50 h-6 w-6 rounded-full bg-white/80 opacity-0 shadow-[0_0_20px_6px_rgba(255,255,255,0.35)]"></div>
 </div>
 
 <style>
@@ -86,34 +84,20 @@ const projects: Project[] = [
 		transform: translateY(0);
 		opacity: 1;
 	}
-
-	.gallery-cursor {
-		will-change: transform;
-		transition: opacity 200ms ease;
-	}
-
-	.gallery-cursor.is-visible {
-		opacity: 1;
-	}
 </style>
 
 <script>
 	const gallery = document.querySelector<HTMLElement>('.works-gallery')!;
 	const cards = gallery.querySelectorAll<HTMLElement>('.gallery-card');
-	const cursor = gallery.querySelector<HTMLElement>('.gallery-cursor')!;
 
 	cards.forEach((card) => {
 		card.addEventListener('mouseenter', () => {
 			cards.forEach((c) => c.classList.toggle('is-active', c === card));
-			cursor.classList.add('is-visible');
+			document.documentElement.classList.add('dot-cursor');
 		});
 		card.addEventListener('mouseleave', () => {
 			card.classList.remove('is-active');
-			cursor.classList.remove('is-visible');
+			document.documentElement.classList.remove('dot-cursor');
 		});
-	});
-
-	window.addEventListener('mousemove', (event) => {
-		cursor.style.transform = `translate3d(${event.clientX - 12}px, ${event.clientY - 12}px, 0)`;
 	});
 </script>

@@ -7,9 +7,14 @@ export const createNoiseMaterial = () =>
 		wireframe: true,
 		uniforms: {
 			uTime: { value: 0 },
+			// Optional cursor influence (object space); strength 0 leaves the surface untouched.
+			uPointer: { value: new THREE.Vector3() },
+			uPointerStrength: { value: 0 },
 		},
 		vertexShader: `
 			uniform float uTime;
+			uniform vec3 uPointer;
+			uniform float uPointerStrength;
 			varying vec3 vNormal;
 			varying float vDisplacement;
 			varying vec2 vUv;
@@ -82,7 +87,9 @@ export const createNoiseMaterial = () =>
 			void main() {
 				vNormal = normal;
 				vUv = uv;
-				float displacement = snoise(position * 1.5 + uTime * 0.15) * 0.15;
+				// Near the cursor the noise gets rougher and the surface swells toward it.
+				float influence = uPointerStrength * (1.0 - smoothstep(0.0, 1.1, distance(position, uPointer)));
+				float displacement = snoise(position * 1.5 + uTime * 0.15) * (0.15 + influence * 0.2) + influence * 0.14;
 				vDisplacement = displacement;
 				vec3 newPosition = position + normal * displacement;
 				gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
